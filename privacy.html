@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>YouTube GPT Summary Privacy Policy and Disclaimer</title>
+  <style>
+    body {
+      max-width: 880px;
+      margin: 40px auto;
+      padding: 0 20px 64px;
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #1f2937;
+      background: #ffffff;
+    }
+    h1, h2, h3 {
+      line-height: 1.25;
+      color: #111827;
+    }
+    code {
+      background: #f3f4f6;
+      padding: 0.1em 0.25em;
+      border-radius: 4px;
+    }
+    a {
+      color: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <h1>YouTube GPT Summary Privacy Policy and Disclaimer</h1>
+  <p><strong>Last updated:</strong> 2026-05-09 KST</p>
+
+  <p>This document describes how the YouTube GPT Summary Chrome extension handles data, what third-party services may receive user-directed content, and what limitations apply to summaries generated through ChatGPT or Gemini.</p>
+
+  <h2>1. Service Overview</h2>
+  <p>YouTube GPT Summary is a browser extension that helps users extract a YouTube video's available transcript and send it to ChatGPT or Gemini with a selected prompt for summarization or audit-style analysis.</p>
+  <p>YouTube GPT Summary is an independent tool. It is not affiliated with, sponsored by, endorsed by, or officially approved by YouTube, Google, OpenAI, ChatGPT, or Gemini. YouTube, Google, OpenAI, ChatGPT, Gemini, and related names or trademarks are the property of their respective owners.</p>
+
+  <h2>2. Data Processed by the Extension</h2>
+  <p>The extension may process the following data in the user's browser to provide its user-facing summary workflow:</p>
+  <ul>
+    <li>YouTube video title</li>
+    <li>YouTube video URL</li>
+    <li>YouTube video ID</li>
+    <li>YouTube transcript or caption text</li>
+    <li>User-entered custom prompt</li>
+    <li>Prompt mode setting</li>
+    <li>Output language setting</li>
+    <li>ChatGPT model selection setting</li>
+    <li>Gemini model selection setting</li>
+    <li>Temporary Chat setting</li>
+    <li>Auto-submit setting</li>
+    <li>Aggressive transcript prefetch setting</li>
+    <li>Temporary queue data used to send prepared prompts to ChatGPT or Gemini</li>
+  </ul>
+  <p>The extension uses this data only to prepare and send a prompt to ChatGPT or Gemini when the user uses the summarization workflow.</p>
+
+  <h2>3. Local Storage</h2>
+  <p>The extension stores user settings in Chrome extension storage so the settings remain available between browser sessions.</p>
+  <p>Stored settings may include:</p>
+  <ul>
+    <li><code>customPrompt</code></li>
+    <li><code>promptMode</code></li>
+    <li><code>outputLanguage</code></li>
+    <li><code>chatgptModel</code></li>
+    <li><code>geminiModel</code></li>
+    <li><code>aggressiveTranscriptPrefetch</code></li>
+    <li><code>useTemporaryChat</code></li>
+    <li><code>autoSubmit</code></li>
+  </ul>
+  <p>If the custom prompt is empty or contains only whitespace, it may be stored internally as <code>null</code>.</p>
+
+  <h2>4. Temporary In-Browser Data</h2>
+  <p>The extension may temporarily keep transcript data in the current YouTube tab's content-script memory to speed up the user's later click on the summarize button. This cache is local to the current browser tab and is not a permanent video history.</p>
+  <p>The extension may also use <code>chrome.storage.session</code> for temporary prompt-transfer data. Queue or pending-prompt data may include the final prompt, source metadata, request ID, selected ChatGPT or Gemini model setting, and related temporary workflow state. This data is used to process ChatGPT or Gemini prompt-transfer jobs and is not intended as permanent storage.</p>
+  <p>The extension does not permanently store video-by-video summary history, transcript history, ChatGPT or Gemini response content, ChatGPT or Gemini conversation history, user account information, payment information, or advertising identifiers.</p>
+
+  <h2>5. Data Sharing and Third-Party Services</h2>
+  <p>The developer does not operate a server for this extension.</p>
+  <p>The extension does not send user data to a developer-operated server. The extension does not sell user data. The extension does not share user data with advertising networks, data brokers, credit scoring services, or retargeting services.</p>
+  <p>When the user activates the summarize workflow, the generated prompt may include the YouTube video title, URL, transcript, selected prompt text, and selected output-language instruction. That prompt may be inserted into ChatGPT or Gemini and submitted to ChatGPT/OpenAI or Gemini/Google according to the user's settings and actions.</p>
+  <p>Data sent to ChatGPT or OpenAI may be subject to OpenAI's terms, privacy policy, data handling rules, account settings, and Temporary Chat behavior.</p>
+  <p>Data sent to Gemini or Google may be subject to Google's terms, privacy policy, data handling rules, account settings, and Gemini Temporary Chat behavior.</p>
+  <p>The extension does not send transcript or prompt data to Claude or any separate analysis server.</p>
+  <p>The extension's use of user data is limited to providing or improving the extension's single user-facing purpose: preparing and sending a YouTube transcript-based prompt to ChatGPT or Gemini at the user's request. The extension does not use user data for advertising, creditworthiness, data brokerage, resale, or unrelated purposes.</p>
+
+  <h2>6. Temporary Chat and Auto-Submit</h2>
+  <p>The extension attempts to use ChatGPT Temporary Chat when the user has enabled the Temporary Chat setting.</p>
+  <p>Temporary Chat behavior, availability, URL behavior, user interface structure, data retention policy, and service operation are controlled by OpenAI and may change. The developer does not guarantee that Temporary Chat will always be available, will always be detected, or will always process data in a particular way.</p>
+  <p>For Gemini, the extension attempts to use Gemini Temporary Chat before inserting or submitting the prompt. Gemini Temporary Chat behavior, availability, user interface structure, data retention policy, and service operation are controlled by Google and may change. The developer does not guarantee that Gemini Temporary Chat will always be available, will always be detected, or will always process data in a particular way.</p>
+  <p>If the <code>autoSubmit</code> setting is enabled, clicking a summarize button may cause the generated prompt to be automatically inserted into the ChatGPT or Gemini composer and automatically submitted. If Gemini Temporary Chat cannot be confirmed, the extension should withhold Gemini auto-submit and leave the prompt in the composer when possible.</p>
+
+  <h2>7. Clipboard Use</h2>
+  <p>The extension may copy the generated final prompt to the clipboard as a fallback. This is intended to help the user paste the prompt manually if automatic ChatGPT injection fails or if browser focus restrictions prevent direct insertion.</p>
+
+  <h2>8. Permissions and Host Access</h2>
+  <p>The extension requests only the permissions needed for its stated workflow.</p>
+  <h3><code>storage</code></h3>
+  <p>Used to store user settings and temporary queue state.</p>
+  <h3><code>clipboardWrite</code></h3>
+  <p>Used to copy the generated prompt to the clipboard as a fallback.</p>
+  <h3><code>https://www.youtube.com/*</code></h3>
+  <p>Used to insert the summarize button on YouTube watch pages and extract the available transcript.</p>
+  <h3><code>https://chatgpt.com/*</code> and <code>https://chat.openai.com/*</code></h3>
+  <p>Used to insert the generated prompt into ChatGPT and, if enabled, submit it.</p>
+  <h3><code>https://gemini.google.com/*</code></h3>
+  <p>Used to insert the generated prompt into Gemini Temporary Chat and, if enabled and Temporary Chat is confirmed, submit it.</p>
+
+  <h2>9. Disclaimer</h2>
+  <p>YouTube GPT Summary is not affiliated with, sponsored by, endorsed by, or officially approved by YouTube, Google, OpenAI, ChatGPT, or Gemini.</p>
+  <p>This extension helps users send YouTube transcript text to ChatGPT or Gemini for summarization or audit-style analysis. AI-generated summaries may be inaccurate, incomplete, outdated, or misleading. Users should verify important information directly from the original video, official materials, or other reliable sources.</p>
+  <p>This extension does not provide legal, medical, financial, investment, tax, accounting, or other professional advice. Generated summaries or analyses should not be used as a substitute for professional judgment, professional review, or professional advice.</p>
+  <p>This extension may be used for personal, educational, research, work, or business workflows. This permission applies only to use of the extension itself. It does not grant ownership, license, redistribution rights, commercial-use rights, or any other rights to YouTube videos, transcripts, captions, thumbnails, channel content, comments, brand elements, or other third-party content.</p>
+  <p>Users are solely responsible for ensuring that their use of transcripts, prompts, AI-generated summaries, and resulting materials complies with applicable laws, copyright rules, platform terms, third-party rights, and their organization's policies.</p>
+  <p>The developer does not guarantee that any transcript, summary, AI-generated output, or resulting material is legally safe for publication, redistribution, monetization, workplace use, or commercial use.</p>
+  <p>The extension does not operate its own AI model and does not guarantee the availability, accuracy, behavior, speed, output quality, policy stability, or uninterrupted operation of ChatGPT, OpenAI, Gemini, Google, YouTube, or any other third-party service.</p>
+
+  <h2>10. Chrome Web Store Publication Notes</h2>
+  <p>Before publishing, the Chrome Web Store listing, privacy disclosures, permission justifications, screenshots, and store description should remain consistent with this document.</p>
+  <p>The store description should clearly state that the extension sends YouTube transcript-based prompts to ChatGPT or Gemini when the user uses the corresponding summarize feature.</p>
+  <p>The permission justification should accurately explain YouTube page access, ChatGPT page access, Gemini page access, <code>storage</code>, and <code>clipboardWrite</code>.</p>
+  <p>The extension name, icon, screenshots, and description should not imply official affiliation, endorsement, sponsorship, or approval by YouTube, Google, OpenAI, ChatGPT, or Gemini.</p>
+</body>
+</html>
