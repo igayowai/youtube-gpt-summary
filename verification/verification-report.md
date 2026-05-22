@@ -1,0 +1,52 @@
+# Verification Report
+
+Generated: 2026-05-03 19:33:38 KST
+
+- PASS: manifest_version is 3
+- PASS: permissions are storage and clipboardWrite only — ['storage', 'clipboardWrite']
+- PASS: tabs permission is absent
+- PASS: minimum chrome version set for storage.session
+- PASS: YouTube host permission present
+- PASS: ChatGPT host permission present
+- PASS: OpenAI legacy host permission present
+- PASS: background service worker path exists
+- PASS: src/shared/constants.js exists
+- PASS: src/shared/logger.js exists
+- PASS: src/shared/promptBuilder.js exists
+- PASS: src/shared/transcriptFormat.js exists
+- PASS: src/shared/storage.js exists
+- PASS: src/content/youtube.js exists
+- PASS: src/content/chatgpt.js exists
+- PASS: src/background/service_worker.js exists
+- PASS: src/options/options.html exists
+- PASS: src/options/options.css exists
+- PASS: src/options/options.js exists
+- PASS: README.md exists
+- PASS: PRIVACY.md exists
+- PASS: assets/icon16.png exists
+- PASS: assets/icon48.png exists
+- PASS: assets/icon128.png exists
+- PASS: shared namespace uses globalThis.YGS
+- PASS: window.YGS is not used
+- PASS: direct OpenAI API is absent
+- PASS: Gemini code path is absent
+- PASS: Claude code path is absent
+- PASS: temporary chat URL constant present
+- PASS: requestId pending prompt flow present
+- PASS: empty transcript STOP prompt present
+- PASS: language priority ko/en present
+- PASS: YouTube shared files load before youtube.js — ['src/shared/constants.js', 'src/shared/logger.js', 'src/shared/promptBuilder.js', 'src/shared/transcriptFormat.js', 'src/shared/storage.js', 'src/content/youtube.js']
+- PASS: ChatGPT shared files load before chatgpt.js — ['src/shared/constants.js', 'src/shared/logger.js', 'src/content/chatgpt.js']
+- PASS: JS syntax: src/background/service_worker.js
+- PASS: JS syntax: src/shared/constants.js
+- PASS: JS syntax: src/shared/logger.js
+- PASS: JS syntax: src/shared/promptBuilder.js
+- PASS: JS syntax: src/shared/transcriptFormat.js
+- PASS: JS syntax: src/shared/storage.js
+- PASS: JS syntax: src/content/youtube.js
+- PASS: JS syntax: src/content/chatgpt.js
+- PASS: JS syntax: src/options/options.js
+- PASS: Prompt builder behavior tests — prompt tests passed
+- PASS: icon16.png is 16x16 — (16, 16)
+- PASS: icon48.png is 48x48 — (48, 48)
+- PASS: icon128.png is 128x128 — (128, 128)

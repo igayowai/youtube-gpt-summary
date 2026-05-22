@@ -1,0 +1,68 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube GPT Summary",
+  "version": "0.1.90",
+  "description": "Use accessible YouTube transcripts or captions to prepare prompts for ChatGPT or Gemini.",
+  "minimum_chrome_version": "102",
+  "permissions": [
+    "storage",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "https://chatgpt.com/*",
+    "https://chat.openai.com/*",
+    "https://gemini.google.com/*"
+  ],
+  "background": {
+    "service_worker": "src/background/service_worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*"
+      ],
+      "js": [
+        "src/shared/constants.js",
+        "src/shared/logger.js",
+        "src/shared/promptBuilder.js",
+        "src/shared/transcriptFormat.js",
+        "src/shared/storage.js",
+        "src/content/youtube.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*"
+      ],
+      "js": [
+        "src/shared/constants.js",
+        "src/shared/logger.js",
+        "src/content/chatgpt.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://gemini.google.com/*"
+      ],
+      "js": [
+        "src/shared/constants.js",
+        "src/shared/logger.js",
+        "src/content/gemini.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_page": "src/options/options.html",
+  "action": {
+    "default_title": "YouTube GPT Summary"
+  },
+  "icons": {
+    "16": "assets/icon16.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  }
+}
