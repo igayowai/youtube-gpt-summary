@@ -4,7 +4,7 @@ const { createRuntime, exposeProvider, Button, providerEnvironment } = require("
 
 // Reduced sketch of the 2026-10-19 composer, not browser evidence. A real send removes the
 // send button, shows a "중지" stop button, empties the editor and moves the URL to /c/<id>.
-function fixture({ acceptOnClick = 1, clearOnly = false, detached = false } = {}) {
+function fixture({ acceptOnClick = 1, clearOnly = false, detached = false, unrendered = false } = {}) {
   const h = createRuntime();
   const env = providerEnvironment();
   let text = "prompt text";
@@ -51,6 +51,15 @@ function fixture({ acceptOnClick = 1, clearOnly = false, detached = false } = {}
     if (selector.includes("보내기")) return sent || detached ? [] : [send];
     return [];
   };
+  if (unrendered) {
+    // A tab that was never shown: 0x0 viewport and zero-size boxes, but layout boxes exist.
+    env.innerWidth = 0;
+    env.innerHeight = 0;
+    for (const element of [input, send, live]) {
+      element.getBoundingClientRect = () => ({ left: 0, top: 0, width: 0, height: 0 });
+      element.getClientRects = () => [{}];
+    }
+  }
   env.Date = class extends Date { static now() { return now; } };
   env.setTimeout = (callback, ms) => { now += ms; queueMicrotask(callback); };
   const api = exposeProvider(h, "chatgpt", ["submitPrompt"], env);
@@ -83,6 +92,12 @@ test("an emptied editor without a send signal is not clicked again", async () =>
 
 test("a re-rendered composer is followed: the send button is found from the live editor", async () => {
   const f = fixture({ detached: true });
+  assert.equal(await f.api.submitPrompt(f.input), true, JSON.stringify(f.h.logs));
+  assert.equal(f.clicks(), 1);
+});
+
+test("a never-shown tab (0x0 viewport) still finds and confirms the send", async () => {
+  const f = fixture({ unrendered: true });
   assert.equal(await f.api.submitPrompt(f.input), true, JSON.stringify(f.h.logs));
   assert.equal(f.clicks(), 1);
 });

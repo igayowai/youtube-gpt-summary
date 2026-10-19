@@ -2051,13 +2051,21 @@ globalThis.YGS = globalThis.YGS || {};
     );
   }
 
+  // 2026-10-19: a tab that has never been shown (opened, then the user or a tool switched
+  // away at once) has a 0x0 viewport, so every element reports zero size. In that case only
+  // style and layout presence can tell hidden from shown.
   function isVisible(element) {
-    const rect = element.getBoundingClientRect();
     const style = globalThis.getComputedStyle(element);
-    return rect.width > 0
-      && rect.height > 0
-      && style.visibility !== "hidden"
-      && style.display !== "none";
+    if (style.visibility === "hidden" || style.display === "none") {
+      return false;
+    }
+
+    if (globalThis.innerWidth === 0 || globalThis.innerHeight === 0) {
+      return typeof element.getClientRects !== "function" || element.getClientRects().length > 0;
+    }
+
+    const rect = element.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0;
   }
 
   function getElementLabel(element) {

@@ -1,6 +1,8 @@
-# YouTube GPT Summary Extension v0.1.108
+# YouTube GPT Summary Extension v0.1.109
 
 Project-local rules for Claude Code live in [CLAUDE.md](CLAUDE.md). Keep `README.md` focused on product behavior, setup, changelog, and debugging notes.
+
+v0.1.109 (2026-10-19): a ChatGPT/Gemini tab that is opened and never shown (the user switches away at once) has a 0x0 viewport, so every element measured zero size and the visibility check rejected the editor and the send button. Visibility now falls back to style and layout presence in that case.
 
 v0.1.108 (2026-10-19): root cause of the ChatGPT auto-submit failure. After injection ChatGPT re-renders the composer; the editor the extension held was detached and a new editor holding the same text replaced it. The send-button search started from the detached editor and found nothing for 45 s (`send-button-missing`, empty button list). The send search and the submission check now follow the live composer.
 
