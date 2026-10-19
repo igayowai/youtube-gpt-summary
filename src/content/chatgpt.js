@@ -1646,59 +1646,75 @@
   async function submitPrompt(input) {
     const startPath = location.pathname;
     const startedAt = Date.now();
-    // 2026-10-19: clicks in the first ~10 s after the tab opened were ignored twice, while the
-    // same click a minute later sent at once. Keep retrying for a while as long as the prompt
-    // is still in the editor and nothing indicates a send.
+    const trace = [];
+    const note = (event, extra = {}) => trace.push({ t: Date.now() - startedAt, event, ...extra });
+    // 2026-10-19 live checks: the prompt was visible in the editor, but sends made by the
+    // extension in the first ~10-20 s failed, while the same click 30-60 s later sent at once.
+    // ChatGPT shows the send button only after it registers the editor text, so wait for it
+    // inside one retry window, and keep clicking only while the prompt stays in the editor.
     for (let attempt = 1; Date.now() - startedAt < SUBMIT_RETRY_WINDOW_MS; attempt += 1) {
-      const button = await waitForSendButton(input, 5000);
+      const remaining = SUBMIT_RETRY_WINDOW_MS - (Date.now() - startedAt);
+      const button = await waitForSendButton(input, Math.max(remaining, 0));
       if (!button) {
+        note("send-button-missing", { buttons: describeComposerButtons(input) });
         break;
       }
 
+      note("click", { attempt });
       try {
         button.click();
       } catch (error) {
-        globalThis.YGS.warn("Send button click failed", error);
+        note("click-threw", { message: String(error?.message || error) });
         break;
       }
 
       const outcome = await waitForChatGptSubmission(input, startPath, Math.min(2000 + attempt * 1000, 6000));
+      note("outcome", { attempt, outcome });
       if (outcome === "sent") {
-        globalThis.YGS.log("ChatGPT submission confirmed", { attempt, elapsedMs: Date.now() - startedAt });
+        globalThis.YGS.log("ChatGPT submission confirmed", JSON.stringify(trace));
         return true;
       }
       if (outcome !== "not-sent") {
         // Prompt left the editor but no clear send signal: never click again to avoid a double send.
-        globalThis.YGS.warn("ChatGPT submission state unclear; not retrying", { attempt, outcome });
+        globalThis.YGS.warn("ChatGPT submission state unclear; not retrying", JSON.stringify(trace));
         return false;
       }
-      globalThis.YGS.log("ChatGPT send click not accepted yet; retrying", {
-        attempt,
-        elapsedMs: Date.now() - startedAt,
+      note("ignored", {
         visibility: document.visibilityState,
         hasFocus: typeof document.hasFocus === "function" ? document.hasFocus() : null,
-        activeElement: document.activeElement?.tagName || null,
         openMenus: document.querySelectorAll("[role='menu']").length,
-        buttonDisabled: Boolean(button.disabled),
-        buttonAriaDisabled: button.getAttribute("aria-disabled")
+        buttons: describeComposerButtons(input)
       });
     }
 
     if (CHATGPT_SEND_PLAN_A_ONLY) {
-      globalThis.YGS.warn("ChatGPT Enter submit fallback disabled for Plan A test");
+      globalThis.YGS.warn("ChatGPT Enter submit fallback disabled for Plan A test", JSON.stringify(trace));
       return false;
     }
 
     if (!getLiveChatGptComposerText(input) || !dispatchEnterFallback(input)) {
+      globalThis.YGS.warn("ChatGPT submission not attempted via Enter", JSON.stringify(trace));
       return false;
     }
     const outcome = await waitForChatGptSubmission(input, startPath, 3000);
+    note("enter-outcome", { outcome });
     if (outcome === "sent") {
-      globalThis.YGS.log("ChatGPT submission confirmed via Enter fallback");
+      globalThis.YGS.log("ChatGPT submission confirmed via Enter fallback", JSON.stringify(trace));
       return true;
     }
-    globalThis.YGS.warn("ChatGPT submission not confirmed; prompt should remain in composer", { outcome });
+    globalThis.YGS.warn("ChatGPT submission not confirmed; prompt should remain in composer", JSON.stringify(trace));
     return false;
+  }
+
+  function describeComposerButtons(input) {
+    const roots = getComposerScopedSearchRoots(input);
+    const scope = roots[0] || document.querySelector("form") || document;
+    return Array.from(scope.querySelectorAll("button")).slice(0, 8).map((button) => [
+      button.getAttribute("type") || "",
+      button.getAttribute("aria-label") || button.getAttribute("data-testid") || "",
+      button.disabled ? "disabled" : "",
+      isVisible(button) ? "" : "hidden"
+    ].filter(Boolean).join(":"));
   }
 
   function getLiveChatGptComposerText(input) {

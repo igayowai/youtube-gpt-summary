@@ -1,6 +1,8 @@
-# YouTube GPT Summary Extension v0.1.106
+# YouTube GPT Summary Extension v0.1.107
 
 Project-local rules for Claude Code live in [CLAUDE.md](CLAUDE.md). Keep `README.md` focused on product behavior, setup, changelog, and debugging notes.
+
+v0.1.107 (2026-10-19): in the v0.1.106 live check the extension gave up about 8-20 s after injection without any retry log, while a page click right after sent in 0.6 s. ChatGPT send now waits for the send button across the whole 45 s window, records a step trace (button found or missing, each click outcome, composer buttons) and prints it as one text line. All `[YGS]` log objects are now printed as JSON text so automation tools can read them without DevTools.
 
 v0.1.106 (2026-10-19): the v0.1.105 live check reported the failure correctly, but three clicks in the first ~10 s were still ignored while the same click a minute later sent at once. Send retries now continue for up to 45 s while the prompt stays in the editor, and each ignored click logs page state (visibility, focus, open menus, button disabled) for diagnosis.
 
