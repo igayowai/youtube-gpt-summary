@@ -50,10 +50,16 @@ test("a send click that ChatGPT ignores is retried until the send is confirmed",
   assert.equal(f.clicks(), 2);
 });
 
-test("a send that never lands reports failure instead of success", async () => {
-  const f = fixture({ acceptOnClick: 99 });
+test("a send that never lands reports failure after the retry window", async () => {
+  const f = fixture({ acceptOnClick: 999 });
   assert.equal(await f.api.submitPrompt(f.input), false);
-  assert.equal(f.clicks(), 3);
+  assert.ok(f.clicks() >= 3 && f.clicks() <= 20, String(f.clicks()));
+});
+
+test("a late-accepted click (about 20 seconds in) is still confirmed", async () => {
+  const f = fixture({ acceptOnClick: 6 });
+  assert.equal(await f.api.submitPrompt(f.input), true, JSON.stringify(f.h.logs));
+  assert.equal(f.clicks(), 6);
 });
 
 test("an emptied editor without a send signal is not clicked again", async () => {

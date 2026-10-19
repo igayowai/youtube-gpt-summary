@@ -1,6 +1,8 @@
-# YouTube GPT Summary Extension v0.1.105
+# YouTube GPT Summary Extension v0.1.106
 
 Project-local rules for Claude Code live in [CLAUDE.md](CLAUDE.md). Keep `README.md` focused on product behavior, setup, changelog, and debugging notes.
+
+v0.1.106 (2026-10-19): the v0.1.105 live check reported the failure correctly, but three clicks in the first ~10 s were still ignored while the same click a minute later sent at once. Send retries now continue for up to 45 s while the prompt stays in the editor, and each ignored click logs page state (visibility, focus, open menus, button disabled) for diagnosis.
 
 v0.1.105 (2026-10-19) fixes a false ChatGPT auto-submit success found in the live v0.1.104 check: the send click right after injection was ignored but logged as `Prompt submitted`. The extension now confirms the send (stop button, emptied editor, `/c/` URL), retries the click up to 3 times only while the prompt is still in the editor, and reports failure otherwise.
 

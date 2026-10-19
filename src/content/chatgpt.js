@@ -8,6 +8,7 @@
 
   const INPUT_WAIT_MS = 20000;
   const POLL_MS = 300;
+  const SUBMIT_RETRY_WINDOW_MS = 45000;
   const CHATGPT_MODEL_PLAN_A_ONLY = false;
   const CHATGPT_SEND_PLAN_A_ONLY = false;
 
@@ -1644,7 +1645,11 @@
   // button, shows a stop button, empties the editor and moves the URL to /c/<id>.
   async function submitPrompt(input) {
     const startPath = location.pathname;
-    for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const startedAt = Date.now();
+    // 2026-10-19: clicks in the first ~10 s after the tab opened were ignored twice, while the
+    // same click a minute later sent at once. Keep retrying for a while as long as the prompt
+    // is still in the editor and nothing indicates a send.
+    for (let attempt = 1; Date.now() - startedAt < SUBMIT_RETRY_WINDOW_MS; attempt += 1) {
       const button = await waitForSendButton(input, 5000);
       if (!button) {
         break;
@@ -1657,9 +1662,9 @@
         break;
       }
 
-      const outcome = await waitForChatGptSubmission(input, startPath, 3000);
+      const outcome = await waitForChatGptSubmission(input, startPath, Math.min(2000 + attempt * 1000, 6000));
       if (outcome === "sent") {
-        globalThis.YGS.log("ChatGPT submission confirmed", { attempt });
+        globalThis.YGS.log("ChatGPT submission confirmed", { attempt, elapsedMs: Date.now() - startedAt });
         return true;
       }
       if (outcome !== "not-sent") {
@@ -1667,7 +1672,16 @@
         globalThis.YGS.warn("ChatGPT submission state unclear; not retrying", { attempt, outcome });
         return false;
       }
-      globalThis.YGS.log("ChatGPT send click not accepted yet; retrying", { attempt });
+      globalThis.YGS.log("ChatGPT send click not accepted yet; retrying", {
+        attempt,
+        elapsedMs: Date.now() - startedAt,
+        visibility: document.visibilityState,
+        hasFocus: typeof document.hasFocus === "function" ? document.hasFocus() : null,
+        activeElement: document.activeElement?.tagName || null,
+        openMenus: document.querySelectorAll("[role='menu']").length,
+        buttonDisabled: Boolean(button.disabled),
+        buttonAriaDisabled: button.getAttribute("aria-disabled")
+      });
     }
 
     if (CHATGPT_SEND_PLAN_A_ONLY) {
