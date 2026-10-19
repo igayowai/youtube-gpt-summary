@@ -1,6 +1,6 @@
 globalThis.YGS = globalThis.YGS || {};
 
-globalThis.YGS.VERSION = "0.1.109";
+globalThis.YGS.VERSION = "0.1.110";
 
 globalThis.YGS.DEFAULT_SETTINGS = {
   customPrompt: null,

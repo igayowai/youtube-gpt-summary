@@ -102,7 +102,7 @@
 
     if (pending.useTemporaryChat === false) {
       globalThis.YGS.log("Temporary Chat disabled by setting; submitting in regular chat");
-      const submitted = await submitPrompt(input);
+      const submitted = await submitPrompt(input, { reinject: (element) => injectPrompt(element, pending.prompt) });
       if (submitted) {
         globalThis.YGS.log("Prompt submitted");
       } else {
@@ -119,7 +119,7 @@
       return;
     }
 
-    const submitted = await submitPrompt(input);
+    const submitted = await submitPrompt(input, { reinject: (element) => injectPrompt(element, pending.prompt) });
     if (submitted) {
       globalThis.YGS.log("Prompt submitted");
     } else {
@@ -1643,24 +1643,48 @@
   // 2026-10-19 live check: a click right after injection was ignored while the send button
   // already looked enabled, yet the old code reported success. A real send removes the send
   // button, shows a stop button, empties the editor and moves the URL to /c/<id>.
-  async function submitPrompt(input) {
+  async function submitPrompt(input, options = {}) {
     const startPath = location.pathname;
     const startedAt = Date.now();
     const trace = [];
     const note = (event, extra = {}) => trace.push({ t: Date.now() - startedAt, event, ...extra });
-    // 2026-10-19 live checks: the prompt was visible in the editor, but sends made by the
-    // extension in the first ~10-20 s failed, while the same click 30-60 s later sent at once.
-    // ChatGPT shows the send button only after it registers the editor text, so wait for it
-    // inside one retry window, and keep clicking only while the prompt stays in the editor.
+    let injectedInto = input;
+    let reinjects = 0;
+    let missingNotes = 0;
+    let clicks = 0;
+    // 2026-10-19 live checks: after injection ChatGPT re-renders the composer. In a tab that
+    // was never shown the new editor kept the text; in a shown tab it came back EMPTY with the
+    // send button disabled. Follow the live composer, put the prompt back into a replacement
+    // editor that is empty (at most twice), and keep clicking only while the prompt stays.
     for (let attempt = 1; Date.now() - startedAt < SUBMIT_RETRY_WINDOW_MS; attempt += 1) {
+      const live = resolveLiveComposerInput(input);
+      if (
+        typeof options.reinject === "function"
+        && reinjects < 2
+        && live?.isConnected
+        // An empty editor before any click cannot be a result of our own send.
+        && (live !== injectedInto || clicks === 0)
+        && !getLiveChatGptComposerText(live)
+      ) {
+        reinjects += 1;
+        const ok = Boolean(options.reinject(live));
+        injectedInto = live;
+        note("reinjected", { ok, reinjects });
+        await delay(POLL_MS);
+      }
+
       const remaining = SUBMIT_RETRY_WINDOW_MS - (Date.now() - startedAt);
-      const button = await waitForSendButton(input, Math.max(remaining, 0));
+      const button = await waitForSendButton(input, Math.max(Math.min(remaining, 3000), 0));
       if (!button) {
-        note("send-button-missing", { inputConnected: Boolean(input?.isConnected), buttons: describeComposerButtons(input) });
-        break;
+        if (missingNotes < 3) {
+          missingNotes += 1;
+          note("send-button-missing", { inputConnected: Boolean(input?.isConnected), buttons: describeComposerButtons(input) });
+        }
+        continue;
       }
 
       note("click", { attempt, inputConnected: Boolean(input?.isConnected) });
+      clicks += 1;
       try {
         button.click();
       } catch (error) {
@@ -1692,7 +1716,7 @@
       return false;
     }
 
-    if (!getLiveChatGptComposerText(input) || !dispatchEnterFallback(input)) {
+    if (!getLiveChatGptComposerText(input) || !dispatchEnterFallback(resolveLiveComposerInput(input))) {
       globalThis.YGS.warn("ChatGPT submission not attempted via Enter", JSON.stringify(trace));
       return false;
     }

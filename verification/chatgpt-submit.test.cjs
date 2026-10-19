@@ -4,7 +4,7 @@ const { createRuntime, exposeProvider, Button, providerEnvironment } = require("
 
 // Reduced sketch of the 2026-10-19 composer, not browser evidence. A real send removes the
 // send button, shows a "중지" stop button, empties the editor and moves the URL to /c/<id>.
-function fixture({ acceptOnClick = 1, clearOnly = false, detached = false, unrendered = false } = {}) {
+function fixture({ acceptOnClick = 1, clearOnly = false, detached = false, unrendered = false, remountEmpty = false } = {}) {
   const h = createRuntime();
   const env = providerEnvironment();
   let text = "prompt text";
@@ -26,6 +26,7 @@ function fixture({ acceptOnClick = 1, clearOnly = false, detached = false, unren
     } else if (clicks === acceptOnClick) {
       sent = true;
       text = "";
+      if (liveText !== null) liveText = "";
       env.location.pathname = "/c/test";
     }
   };
@@ -37,9 +38,12 @@ function fixture({ acceptOnClick = 1, clearOnly = false, detached = false, unren
   // detached, and a new editor inside the form (holding the same text) replaced it.
   const live = new Button();
   live.isConnected = true;
-  Object.defineProperty(live, "innerText", { get: () => text });
-  const form = { querySelectorAll: (selector) => selector.includes("보내기") && !sent ? [send] : [] };
+  let liveText = remountEmpty ? "" : null;
+  Object.defineProperty(live, "innerText", { get: () => liveText ?? text });
+  // The send button only counts as enabled while the live editor holds text.
+  const form = { querySelectorAll: (selector) => selector.includes("보내기") && !sent && (liveText === null || liveText) ? [send] : [] };
   live.closest = (selector) => selector === "form" ? form : null;
+  if (remountEmpty) detached = true;
   if (detached) {
     input.isConnected = false;
     const wrapper = { querySelectorAll: () => [] };
@@ -63,7 +67,13 @@ function fixture({ acceptOnClick = 1, clearOnly = false, detached = false, unren
   env.Date = class extends Date { static now() { return now; } };
   env.setTimeout = (callback, ms) => { now += ms; queueMicrotask(callback); };
   const api = exposeProvider(h, "chatgpt", ["submitPrompt"], env);
-  return { api, h, input, clicks: () => clicks };
+  let reinjected = 0;
+  const reinject = (element) => {
+    reinjected += 1;
+    if (element === live) liveText = "prompt text";
+    return true;
+  };
+  return { api, h, input, reinject, clicks: () => clicks, reinjected: () => reinjected };
 }
 
 test("a send click that ChatGPT ignores is retried until the send is confirmed", async () => {
@@ -100,4 +110,17 @@ test("a never-shown tab (0x0 viewport) still finds and confirms the send", async
   const f = fixture({ unrendered: true });
   assert.equal(await f.api.submitPrompt(f.input), true, JSON.stringify(f.h.logs));
   assert.equal(f.clicks(), 1);
+});
+
+test("a re-rendered EMPTY composer gets the prompt again before the send", async () => {
+  const f = fixture({ remountEmpty: true });
+  assert.equal(await f.api.submitPrompt(f.input, { reinject: f.reinject }), true, JSON.stringify(f.h.logs));
+  assert.equal(f.reinjected(), 1);
+  assert.equal(f.clicks(), 1);
+});
+
+test("without a reinject hook an empty re-rendered composer is never sent", async () => {
+  const f = fixture({ remountEmpty: true });
+  assert.equal(await f.api.submitPrompt(f.input), false);
+  assert.equal(f.clicks(), 0);
 });
