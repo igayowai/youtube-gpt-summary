@@ -1,6 +1,111 @@
 # Session Summary
 
-Last Updated: 2026-05-22 KST
+Last Updated: 2026-09-25 KST
+
+## Current Fix: GPT Picker v0.1.103
+
+- Reported `simple panel not ready` reproduced structurally in signed-in Chrome: old panel test IDs, toggle aria-expanded and slider anchor removed. Semantic view, active/aria-hidden track, toggle and power-slider anchors added with legacy fallback.
+- Current advanced view returns to simple by selecting Latest. All model/effort confirmation guards remain. No Gemini, transcript or Options changes; no ZIP.
+- Two new fixture tests cover modern DOM across 15 model/effort cases, advanced start, inactive view and missing/disabled Latest. Existing tests retained.
+- Live DOM reads confirm new selectors, Latest checked, slider 3 -> 2 (High) -> 3 (매우 높음), original state restored and menu closed. No prompt sent. Actual patched extension execution awaits Reload; prior extension-page security block must not be bypassed.
+- Evidence: docs/ui-dom-captures/chatgpt/new-chat/model-picker-2026-09-25.md.
+
+## Current Checkpoint: Latest-Only GPT
+
+- User approved Latest-only GPT summaries. Follow-up corrected the omitted version bump: root runtime is now 0.1.102; no ZIP created.
+- Options model dropdown removed, effort retained. Settings/pending reads and provider boundary force Latest, with final model/effort verification before injection. Retired stored model preference is neither deleted nor overwritten by Options saves.
+- Local regression suite: 36 pass, 10 existing failing TODO assertions, zero unexpected failures. Includes old requests, old model row retirement copy, storage preservation and fail-closed selection.
+- No transcript, button-color or Gemini changes. Actual loaded-extension verification awaits user Reload under the existing browser security restriction; do not bypass it through another transport.
+- Backup and verification details: [Latest-only checkpoint](verification/chatgpt-latest-only-2026-09-19.md). Next: after Reload, refresh relevant ordinary tabs and verify Latest selection plus the retained effort. Actual extension Options remains unverified.
+
+## Previous Checkpoint: Live Revalidation
+
+- User requested tests, not fixes. Runtime remains 0.1.101, no code changes or ZIP. Full local suite: 36 pass, 10 known failing TODO assertions, zero unexpected failures.
+- GPT browser 3-model x 5-effort sweep passed, including Ctrl+Shift+M opening. Initial Latest/Pro restored. Extension synthetic shortcut and all-combination automatic submissions remain unverified.
+- New GPT-5.5 retirement notice changes full row text. Existing readChatGptModelFamily returns empty for the observed label in a local actual-helper reproduction; requested-row lookup uses the same whole-row matching assumption.
+- Gemini browser Temporary Chat on/off and Pro/Extended controls work. Current menu is 3.5 Flash-Lite / 3.8 Flash / 3.1 Pro, with a direct Korean extended toggle, not the older submenu. Existing label matcher mismatches reproduced locally; full extension flow not exercised. Initial Flash-Lite/non-extended/non-temporary state restored.
+- YouTube prior test video's transcript panel remained loading; extension prefetch found no entries and timed out. No provider prompts sent. Root cause not isolated; no service-wide failure claim.
+- Actual Options remains untested under the prior Browser-policy block. No bypass, live storage reads or settings writes. Test-only tabs closed; unrelated tabs untouched.
+- Evidence and remaining coverage: [2026-09-19 report](verification/live-revalidation-2026-09-19.md), linked central GPT capture and local Gemini/YouTube notes. Next: propose bounded provider-menu compatibility fixes and separate transcript diagnosis; no new corrective phase approved.
+
+## Previous Checkpoint: GPT Model / Effort Settings Split
+
+- User approved the settings split with `진행`. Applied to the existing root-loaded extension; version 0.1.101 retained, no ZIP. Gemini content script unchanged by this phase.
+- New model select defaults to Latest; observed GPT-5.6 Sol and GPT-5.5 included. Effort select retains No selection default and now has one Pro. Legacy Pro aliases map to Pro; original `chatgptModel` remains intact on disk.
+- New keys flow through YouTube, background queue/direct open and pending requests. Runtime verifies model first, effort second and both again before injection/submission. Missing/ambiguous/blocked selections fail closed.
+- Verification after timing and shortcut follow-ups: 36 passing tests, 10 existing failing TODO assertions, zero unexpected failures. Syntax, manifest/version and prompt hashes pass. Earlier isolated Chrome Options save/reopen and desktop/mobile screenshots pass; dummy storage only.
+- Implementation/verification/recovery details and next action: [settings-split checkpoint](verification/chatgpt-settings-split-2026-09-10.md). Pre-edit copies: `C:/Users/USER/AppData/Local/Temp/ygs-settings-split-20260910-001`.
+- Latest live check approximately 18:44-18:46 KST after user Reload: old pending request had expired; one fresh public-video summary succeeded through Latest selection, extra-high slider confirmation, final verification, injection and submission. Completed response and closed composer label verified; post-run menu showed Latest checked and slider 3 within 0..4. No manual selection or settings changes.
+- This run used pointer opening; no shortcut-fallback log occurred. Ctrl+Shift+M fallback is implemented and locally tested but extension synthetic shortcut success remains unverified. One successful Latest/extra-high run is not all-model coverage or proof of the earlier root cause.
+- No further Reload needed for this docs-only verification turn. Extension management and Options remain Browser-policy blocked, with no alternate transport bypass allowed. Actual Options persistence, older-model runtime transitions and shortcut activation remain coverage gaps; no unrelated F1-F6 repair approved. Next action: report this successful bounded run, without repeated submissions just to force a fallback.
+
+## Previous Checkpoint: GPT Slider Patch
+
+- Approved GPT-only patch applied to `src/content/chatgpt.js`: model-preserving slider steps, final effort readback, fail-closed injection/submission and menu-scoped diagnostics. Legacy Pro Basic/Extended are not silently mapped to Pro.
+- Added `verification/chatgpt-slider.test.cjs`. Full suite: 21 pass, 10 existing TODO failures, zero unexpected failures; syntax and manifest/version checks pass.
+- User reloaded extension. Actual Chrome run at approximately 04:00 KST succeeded through High -> Extra High (visible 매우 높음), injection and submission. Report headings appeared without manual selection. Details: `verification/chatgpt-slider-live-patch-2026-09-10.md`.
+- Canonical collab capture consumer note and project index updated. No duplicated HTML, version bump or ZIP; version remains 0.1.101. Gemini unchanged by this phase.
+- Pre-patch dirty-source backup: `C:/Users/USER/AppData/Local/Temp/ygs-chatgpt-pre-slider-20260910-patch1.js`.
+- Remaining: legacy Pro semantics, independent Temporary Chat confirmation (known F2), other TODO defects and Gemini UI testing. One live path is not all-model stress coverage. Next phase needs a separately bounded scope.
+
+## Previous Checkpoint: GPT Live Test Before Patch
+
+- User authorized a real signed-in Chrome test after phase 1, GPT first and Gemini later. Test completed 2026-09-10: two YouTube button attempts, one actual summary submission.
+- First attempt had stale/unavailable extension APIs; refreshing YouTube restored queue delivery. Refreshed GPT run requested Extra High but failed option selection and submitted with High. Summary output appeared; requested reasoning was not honored.
+- Current new-chat UI uses a five-position performance slider. Full one-step sweep verified: Instant (0), 중간 (1), High (2), 매우 높음 (3), Pro (4). Highest composer label: 6 Pro. High restored; no prompts sent during menu checks.
+- Exact outerHTML is canonical in the collab skill's new-chat folder: `chatgpt-reasoning-slider-2026-09-10.md`. Project index links there; GPTs and Gemini not inspected.
+- Details and sanitized console evidence: `verification/chatgpt-live-test-2026-09-10.md`.
+- Follow-up model-picker test: all 3 visible models x 5 effort positions verified without sending prompts. Older models always show a version prefix; Latest hides it at values 0..3 but shows 6 Pro at value 4. Reset at 5.6 중간 returned to Latest 중간. Restored Latest + High.
+- Follow-up report: `verification/chatgpt-model-picker-test-2026-09-10.md`; 42 exact shared fragments and the matrix live under the collab new-chat `model-picker-2026-09-10/` folder. Selected-state verification caught several activation misses; do not infer model unavailability from a no-op click.
+- At this earlier checkpoint no runtime patch, version bump or ZIP had been applied. The approved follow-up patch is recorded above; legacy pro-basic/pro-extended mapping remains unresolved.
+
+## Previous Checkpoint: Phase 1 Refactoring
+
+- User approved the first phase from `verification/structure-audit-2026-09-10.md`, then prioritized it over the newly reported ChatGPT/Gemini UI changes.
+- Removed the overwritten default prompt in `src/shared/constants.js`; shared settings normalization in `src/shared/storage.js`; shared Options select rendering and form assignment in `src/options/options.js`. Runtime version remains `0.1.101`; no ZIP generated.
+- Verification: `node --test verification/*.test.cjs`; 16 passing tests and 10 explicit TODO failures reproducing the existing F1-F6 defects. Settings differential check against the pre-edit working tree: 156 inputs, 468 identical comparisons. Default/deep prompt hashes unchanged.
+- Existing provider scripts, queue/pending lifecycle, click sequences, timings, manifest, Options HTML/CSS, and collab captures were not changed. Gemini's current keyboard path includes a pointer click; do not assume it was keyboard-only from older notes below.
+- Pre-edit copies of the five modified existing files are in `C:/Users/USER/AppData/Local/Temp/ygs-refactor-phase1-20260910-001`. This is a temporary local rollback aid, not a committed baseline; preserve earlier dirty changes when undoing this phase.
+- Details: `verification/refactoring-phase1-2026-09-10.md` and `verification/README.md`. The structure audit remains a historical pre-change report.
+- Next action: agree on a separate scope for signed-in Chrome UI capture/testing and provider fixes. The user reports BOTH provider UIs changed; previous captures are historical. No browser tests, external prompt sends, or F1-F6 corrective phase have been performed or implicitly approved by this phase.
+
+## 2026-06-14 Update
+
+v0.1.101 updates ChatGPT reasoning automation after the user's ChatGPT interface language changed to English. Display labels now match the live English reasoning menu (`Instant`, `Medium`, `High`, `Extra High`, `Pro Basic`, `Pro Extended`), while Korean matchers remain as compatibility fallbacks. English `High` is explicitly prevented from matching `Extra High`. The English Temporary Chat tooltip `Turn on temporary chat` is already covered by the existing `temporary` matcher. Manifest and shared version are now `0.1.101`.
+
+## 2026-06-02 Update
+
+v0.1.100 changes Gemini Temporary Chat activation to keyboard-first after live logs showed v0.1.99 still reached the third `keyboard` fallback before confirmation. Gemini now tries keyboard activation first, dispatches only Enter instead of Enter plus Space, trims each fallback window to 0.7 seconds, and caps button stabilization at 250ms. This is project-local Gemini DOM knowledge: `keyboard` means focusing the visible `button[aria-label="임시 채팅"]` and using the button's accessibility activation path, which was the fastest confirmed path for the current Angular/Material control. Manifest and shared version are now `0.1.100`.
+
+v0.1.99 makes Gemini Temporary Chat activation latency-first after v0.1.98 was still too slow in live use. Gemini now tries the native button click before pointer fallback, checks confirmation after only 80ms, uses 0.9s fallback windows, polls active state every 80ms during Temporary Chat confirmation, and limits button-stability waiting to a short 150ms signature check. Manifest and shared version are now `0.1.99`.
+
+v0.1.98 reduces Gemini Temporary Chat startup latency. Live logs showed v0.1.97 could wait through pointer, native, and keyboard fallback windows because confirmation only looked for page copy/input text and did not treat the active `close` icon as success. Gemini now confirms Temporary Chat immediately from the active toggle close icon, shortens fallback windows, and reduces first-click stabilization from a 3.5s page-age gate to a 1.2s gate. Manifest and shared version are now `0.1.98`.
+
+v0.1.97 pins Gemini Temporary Chat activation to the fast nested native `button[aria-label="임시 채팅"]` target. Live Chrome testing on a logged-in Gemini tab showed the native button succeeds for 50/50 activation cycles and 50/50 same-tab reset cycles; active state changes the same toggle icon to `close`. Wrapper, container, and icon-only candidates are now treated as slow blacklisted targets and excluded from runtime fallback selection. Manifest and shared version are now `0.1.97`.
+
+## 2026-06-01 Update
+
+v0.1.96 hardens Gemini Temporary Chat activation after another live failure showed two click attempts but no confirmation. The likely failure mode is timing: the Temporary Chat button is visible before Gemini has fully attached/settled its click handlers. Gemini now waits for the button geometry/signature to stay stable for at least 1.2 seconds and for page age to reach 3.5 seconds before the first click. Confirmation windows were lengthened, page age is logged, and keyboard activation was added as a final fallback. Manifest and shared version are now `0.1.96`.
+
+v0.1.95 fixes ChatGPT `매우 높음` reasoning row detection. Live logs showed the selector was found as `Pro 확장`, but the `매우 높음` menu row was not selected even though the row existed. Root cause: `매우 높음` also matched the older `높음` prefix matcher, so the row was classified as containing multiple options and filtered out. The matcher now prevents `매우 높음` from being treated as plain `높음`. Manifest and shared version are now `0.1.95`.
+
+v0.1.94 updates the ChatGPT extra-high reasoning option after the live UI label changed to `매우 높음`. The internal stored value remains `extra-high`; the ChatGPT model list now displays and matches the Korean label `매우 높음`. Manifest and shared version are now `0.1.94`.
+
+v0.1.93 adjusts the Gemini Temporary Chat activation sequence after live logs showed the extension clicking the correct `임시 채팅` button twice but still failing confirmation. The likely issue was toggle-style behavior receiving more than one click event per attempt: `clickElementLikeUser()` dispatched a synthetic click and then called native `.click()`. Gemini Temporary Chat now uses a single pointer-style click, waits for confirmation, and only then falls back to a single native click if needed.
+
+Static validation passed for all JavaScript files under `src/`; manifest and shared version are now `0.1.93`.
+
+v0.1.92 fixes Gemini Temporary Chat activation for the current `temp-chat-button` structure. User logs showed the extension found Temporary Chat candidates but failed confirmation, while manual activation worked. The captured DOM showed an empty-label `data-test-id="temp-chat-button"` custom wrapper around the actual nested `button[aria-label="임시 채팅"]`. The Gemini content script now prioritizes that nested native button and scores it by label, `gemini_chat_temp` icon, and `temp-chat-button` ancestry.
+
+Static validation passed for `src/content/gemini.js` with `node --check`; manifest and shared version are now `0.1.92`. The new Gemini Temporary Chat capture is archived under `docs/ui-dom-captures/`.
+
+v0.1.91 abandons the old ChatGPT `Instant / Thinking / Pro` model-selection structure and moves the ChatGPT setting to the current `추론` menu structure. The Options page now labels this control as `GPT 추론 선택` with `선택 없음`, `즉시`, `중간`, `높음`, `매우 높음`, `Pro 기본`, and `Pro 확장`.
+
+The ChatGPT content script now treats composer `__composer-pill` controls as the new reasoning selector, searches the Radix `composer-intelligence` menu rows including `role="menuitemradio"` entries, avoids clicking the Pro-row trailing variant button as if it were the row itself, and opens the Pro variant submenu when `Pro 기본` or `Pro 확장` is requested. Legacy saved `thinking` values migrate to `높음`, and legacy saved `pro` values migrate to `Pro 확장`. The separate `GPT-5.5` model-version submenu is intentionally ignored for this extension setting.
+
+Static validation passed for `src/content/chatgpt.js`, `src/shared/constants.js`, and `src/shared/storage.js` with `node --check`; manifest and shared version are now `0.1.91`.
+
+Gemini, YouTube, and project-specific UI DOM assets are organized under `docs/ui-dom-captures/`, and the project-local rule is recorded in `AGENTS.md`. Shared ChatGPT captures are maintained once under `C:/Users/USER/Documents/Claude/youtube_summary_GPT/docs/ui-dom-captures/chatgpt`, split into `new-chat/` and `gpts/`; the captures now reside in this project after retirement of the old collaboration skill.
 
 ## 2026-05-08 Update
 

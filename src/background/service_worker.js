@@ -262,7 +262,8 @@ async function openGeminiWithPrompt(payload) {
     ...payload,
     requestId,
     useTemporaryChat: false,
-    chatgptModel: "none",
+    chatgptModelFamily: "latest",
+    chatgptReasoningEffort: "none",
     geminiModel: payload.geminiModel || "none",
     geminiThinkingLevel: payload.geminiThinkingLevel || "none",
     createdAt: Number(payload.createdAt || Date.now())

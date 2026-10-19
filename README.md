@@ -1,4 +1,36 @@
-# YouTube GPT Summary Extension v0.1.90
+# YouTube GPT Summary Extension v0.1.103
+
+Project-local rules for Claude Code live in [CLAUDE.md](CLAUDE.md). Keep `README.md` focused on product behavior, setup, changelog, and debugging notes.
+
+v0.1.103 (2026-09-25) fixes `simple panel not ready` after ChatGPT removed the old panel test IDs, toggle aria-expanded and slider anchor. New semantic view/slider anchors coexist with the earlier selectors. Latest-only and final effort verification remain required. [Current capture and verification](docs/ui-dom-captures/chatgpt/new-chat/model-picker-2026-09-25.md). No ZIP; installed-extension execution awaits Reload.
+
+Current root patch v0.1.102, 2026-09-19: GPT summaries always select and verify Latest, including old pending requests. Options exposes reasoning effort only (No selection, Instant, Medium, High, Extra High, Pro); the model dropdown was removed. Retired model preferences and legacy effort fields remain untouched on disk. Model and effort must both be confirmed before prompt injection/submission. No ZIP created. Local regression tests pass; this patch's loaded-extension validation awaits Reload. See the [Latest-only checkpoint](verification/chatgpt-latest-only-2026-09-19.md).
+
+Earlier 2026-09-10 phase: internal refactoring removed the overwritten default prompt and shared settings normalization/Options rendering without changing effective prompt text. Subsequent GPT slider and settings patches are documented separately in [local verification](verification/README.md). Gemini UI testing remains deferred. See the [phase 1 report](verification/refactoring-phase1-2026-09-10.md).
+
+The version notes below describe historical releases preceding v0.1.102.
+
+v0.1.101 updates ChatGPT reasoning automation for the English ChatGPT UI. The displayed reasoning labels now match `Instant`, `Medium`, `High`, `Extra High`, `Pro Basic`, and `Pro Extended`; Korean matchers remain as compatibility fallbacks. English `High` is guarded from matching the `Extra High` row, and English menu diagnostics include the `Intelligence` label.
+
+v0.1.100 moves Gemini Temporary Chat activation to the observed successful keyboard-first path. The fallback chain now tries keyboard before pointer/native, uses only Enter for the keyboard activation, trims each fallback window to 0.7s, and caps button stabilization at 250ms.
+
+v0.1.99 makes Gemini Temporary Chat activation latency-first. The content script now tries the fast native button click before synthetic pointer fallback, cuts per-method confirmation windows to 0.9s, reduces post-click delay to 80ms, and limits button-stability waiting to a short 150ms signature check.
+
+v0.1.98 speeds up Gemini Temporary Chat activation after live logs showed the recent hardening path waiting through pointer, native, and keyboard fallback windows even though the toggle had likely already changed state. Temporary Chat confirmation now accepts the active `close` icon as an immediate success signal, shortens fallback confirmation windows, and reduces first-click stabilization from a 3.5s page-age gate to a 1.2s gate.
+
+v0.1.97 pins Gemini Temporary Chat activation to the fast native `button[aria-label='임시 채팅']` path after live Chrome stress testing showed 50/50 activation and 50/50 reset success. Slower wrapper/container/icon targets are now tracked as a blacklist and excluded from runtime fallback selection.
+
+v0.1.96 makes Gemini Temporary Chat activation wait for the visible button to stabilize before clicking. This avoids clicking while Gemini has rendered the button but has not finished attaching its interaction handlers. The click path now logs page age, tries pointer and native clicks with longer confirmation windows, and adds a keyboard activation fallback.
+
+v0.1.95 fixes ChatGPT `매우 높음` row detection. Because `매우 높음` contains the word `높음`, the older `높음` prefix matcher could make the row look like multiple reasoning options and discard it. The matcher now prevents `매우 높음` from being treated as plain `높음`.
+
+v0.1.94 updates the ChatGPT extra-high reasoning label to the current Korean UI text `매우 높음`. The stored value remains `extra-high`.
+
+v0.1.93 fixes the Gemini Temporary Chat click sequence for toggle-style behavior. The Gemini content script no longer sends both a synthetic pointer click and a native `.click()` in the same activation attempt, because that can behave like a double-click on the Temporary Chat toggle. It now tries one pointer-style click, waits for confirmation, then falls back to one native click only if needed.
+
+v0.1.92 fixes Gemini Temporary Chat activation for the current `temp-chat-button` DOM. The Gemini content script now prioritizes the nested native `button[aria-label='임시 채팅']` inside `data-test-id='temp-chat-button'` / `temp-chat-button-container`, instead of clicking the empty-label custom wrapper first. The related reduced DOM capture is indexed under `docs/ui-dom-captures/`.
+
+v0.1.91 replaces the old ChatGPT `Instant / Thinking / Pro` model-selection flow with the current ChatGPT `추론` menu. Options expose `즉시`, `중간`, `높음`, `매우 높음`, `Pro 기본`, and `Pro 확장`; legacy saved `thinking` maps to `높음`, and legacy saved `pro` maps to `Pro 확장`. The ChatGPT content script now targets the Radix `composer-intelligence` menu, including `role="menuitemradio"` rows, and opens the Pro variant submenu when `Pro 기본` or `Pro 확장` must be selected. The separate `GPT-5.5` model-version submenu is intentionally ignored. ChatGPT UI DOM captures are maintained in this project's docs/ui-dom-captures/chatgpt/; capture-management rules live in `AGENTS.md`.
 
 v0.1.90 rolls ChatGPT model selection back to the original `Instant / Thinking / Pro` settings after ChatGPT reverted the temporary model UI. Interim saved `medium` or `high` settings are normalized to `Thinking`, and the ChatGPT selector opening path uses the original model-menu click behavior again.
 
@@ -251,7 +283,7 @@ chrome://extensions
 중요: `manifest.json`이 들어 있는 최상위 폴더를 선택해야 합니다.
 
 ```text
-youtube-gpt-summary-extension/
+youtube_summary_GPT/
 ```
 
 `src/` 폴더만 선택하면 안 됩니다.
@@ -324,6 +356,7 @@ youtube-gpt-summary-extension/
     content/
       youtube.js
       chatgpt.js
+      gemini.js
     options/
       options.html
       options.css
@@ -332,6 +365,17 @@ youtube-gpt-summary-extension/
     icon16.png
     icon48.png
     icon128.png
+  docs/
+    ui-dom-captures/
+  verification/
+    README.md
+    runtime.test.cjs
+    options.test.cjs
+    known-issues.test.cjs
+    helpers/
+      runtime.cjs
+  dist/
+  CLAUDE.md
   README.md
   PRIVACY.md
 ```
@@ -342,6 +386,10 @@ youtube-gpt-summary-extension/
 
 shared 파일은 `window.YGS` 대신 `globalThis.YGS`를 사용합니다. content script, options page, Manifest V3 service worker에서 같은 스타일로 로드하기 위해서입니다.
 
+별도 빌드나 production dependency 없이 `manifest.json`의 순서대로 스크립트를 로드함. `constants.js`는 공통 설정과 프롬프트, `promptBuilder.js`는 최종 프롬프트 생성, `storage.js`는 설정과 대기 프롬프트 저장을 담당함. 각 서비스의 DOM 선택·클릭·임시채팅 판정은 해당 content script에 유지함.
+
+설정 읽기와 저장은 같은 정규화 함수를 사용함. Options의 목록 렌더링과 설정 반영도 공통 함수를 사용하되 HTML, CSS, 저장 키와 기본값은 유지함. 구조·동작 검증은 [verification/README.md](verification/README.md)에 정리함.
+
 ### requestId 기반 pending prompt
 
 단일 pending prompt가 아니라 requestId별 pending prompt를 사용합니다.
@@ -351,25 +399,29 @@ shared 파일은 `window.YGS` 대신 `globalThis.YGS`를 사용합니다. conten
 ```text
 YouTube 클릭
 → requestId 생성
+→ ChatGPT는 background 큐에 등록 / Gemini는 바로 열기 요청
 → chrome.storage.session에 requestId별 prompt 저장
-→ ChatGPT URL hash에 requestId 추가
-→ ChatGPT content script가 자기 requestId만 요청
-→ 주입 성공 후 해당 requestId 삭제
+→ 대상 서비스 URL hash에 requestId 추가
+→ 해당 content script가 자기 requestId만 요청
+→ 주입 성공으로 판단한 후 해당 requestId 삭제
+→ ChatGPT는 큐 완료를 background에 통지
 ```
 
 ### Temporary Chat 안전장치
 
 URL에 `temporary-chat=true`를 붙여 ChatGPT를 열지만, URL 파라미터만으로 임시채팅이 공식 보장된다고 보지 않습니다.
 
-따라서 자동 제출은 다음 조건에서만 시도합니다.
+현재 ChatGPT 자동 제출 조건은 다음과 같음.
 
 ```text
 autoSubmit === true
 그리고
-ChatGPT 페이지에서 임시채팅 활성 상태가 확인됨
+useTemporaryChat === false 또는 런타임 임시채팅 판정이 성공함
 ```
 
-확인되지 않으면 prompt는 입력창에 남겨두고 사용자가 직접 Send/Enter를 누르면 됩니다.
+임시채팅을 요청했으나 판정이 실패하면 prompt를 입력창에 남기고 자동 제출을 보류함. Gemini는 임시채팅 판정이 성공해야 주입을 시작하며, 요청한 모델·사고 수준 선택이 확인되지 않으면 자동 제출을 보류함.
+
+주의: 현재 ChatGPT 판정은 URL 파라미터만으로도 성공하며 Gemini에는 일반 문구를 받아들이는 경로가 있음. 실제 임시채팅 활성화를 보장하는 검증이 아니며, 이 한계는 1차 리팩터링에서 수정하지 않음. [구조 점검 보고서 F2](verification/structure-audit-2026-09-10.md)에 재현 근거를 기록함.
 
 ## 알려진 한계
 
@@ -377,7 +429,7 @@ ChatGPT 페이지에서 임시채팅 활성 상태가 확인됨
 - ChatGPT UI selector가 바뀌면 자동 주입 또는 자동 제출이 실패할 수 있습니다.
 - 매우 긴 transcript는 Chrome session storage, clipboard, ChatGPT 입력창에서 실패할 수 있습니다.
 - v0.1은 Shorts 지원을 보장하지 않습니다.
-- v0.1은 언어 선택 UI를 제공하지 않습니다.
+- 요약 응답 언어는 Options에서 선택 가능함. 원본 자막 언어는 별도 선택 UI 없이 한국어·영어 우선순위로 선택함.
 - v0.1은 fallback toast, alert, status UI를 만들지 않습니다.
 
 ## 디버깅

@@ -75,7 +75,12 @@
       return;
     }
 
-    await selectChatGptModelIfRequested(pending.chatgptModel, input);
+    const selectionConfirmed = await selectChatGptPreferences(pending.chatgptModelFamily, pending.chatgptReasoningEffort, input);
+    if (!selectionConfirmed) {
+      globalThis.YGS.warn("ChatGPT model/effort not confirmed; prompt injection and submission withheld");
+      await notifyChatGptQueueDone(requestId, "selection-not-confirmed");
+      return;
+    }
 
     const injected = injectPrompt(input, pending.prompt);
     if (!injected) {
@@ -354,56 +359,223 @@
     element.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
+  function readChatGptModelFamily(menu) {
+    const panel = menu?.querySelector("[data-testid='composer-model-picker-slider-advanced-view']")
+      || menu?.querySelector("[data-model-picker-view]");
+    const selected = Array.from(panel?.querySelectorAll("[role='menuitemradio'][aria-checked='true']") || []);
+    if (selected.length !== 1) return "";
+    const label = normalizeForComparison(selected[0].textContent);
+    return globalThis.YGS.CHATGPT_MODEL_FAMILIES.find((item) => item.matchers.includes(label))?.value || "";
+  }
+
+  async function openChatGptPicker(input) {
+    const button = await waitForChatGptModelButton(input, 5000);
+    if (!button) return null;
+    if (!findChatGptReasoningMenu(button)) clickElementWithPointerEvents(button, false);
+    let menu = await waitForChatGptReasoningState(() => findChatGptReasoningMenu(button), 1800);
+    // Recheck at the timeout boundary so a late pointer result is not toggled closed.
+    menu = menu || findChatGptReasoningMenu(button);
+    if (!menu) {
+      globalThis.YGS.log("ChatGPT picker shortcut fallback", "Ctrl+Shift+M");
+      button.focus();
+      for (const type of ["keydown", "keyup"]) {
+        button.dispatchEvent(new KeyboardEvent(type, {
+          bubbles: true, cancelable: true, composed: true,
+          key: "M", code: "KeyM", keyCode: 77, which: 77,
+          ctrlKey: true, shiftKey: true, altKey: false, metaKey: false, repeat: false
+        }));
+      }
+      menu = await waitForChatGptReasoningState(() => findChatGptReasoningMenu(button), 1800);
+      if (menu) globalThis.YGS.log("ChatGPT picker opened via shortcut");
+      else globalThis.YGS.warn("ChatGPT picker shortcut did not confirm the owned menu");
+    }
+    return menu ? { button, menu } : null;
+  }
+
+  async function setChatGptPickerView(button, advanced) {
+    const name = advanced ? "advanced" : "simple";
+    const selector = `[data-testid='composer-model-picker-slider-${name}-view'][data-active='true']`;
+    const activePanel = () => {
+      const menu = findChatGptReasoningMenu(button);
+      return menu?.querySelector(selector)
+        || menu?.querySelector(`[data-model-picker-view='${name}'] > [data-active='true'][aria-hidden='false']`);
+    };
+    const read = () => {
+      const panel = activePanel();
+      return panel && !panel.closest("[inert]") && isVisible(panel) ? panel : null;
+    };
+    // An active panel can still have zero geometry during its opening animation.
+    // Wait for the active view rather than toggling away from it.
+    if (activePanel()) return await waitForChatGptReasoningState(read, 1200);
+    const menu = findChatGptReasoningMenu(button);
+    // The new advanced view returns to the slider by selecting a model row.
+    // Select only Latest, never the arbitrary previously selected model.
+    const currentView = menu?.querySelector("[data-model-picker-view]");
+    const latest = globalThis.YGS.CHATGPT_MODEL_FAMILIES.find(item => item.value === "latest");
+    const rows = !advanced && currentView?.getAttribute("data-model-picker-view") === "advanced"
+      ? Array.from(currentView.querySelectorAll("[role='menuitemradio']"))
+        .filter(row => latest.matchers.includes(normalizeForComparison(row.textContent))) : [];
+    const toggle = !advanced && currentView
+      ? (rows.length === 1 ? rows[0] : null)
+      : menu?.querySelector("[role='menuitem'][data-model-picker-view-toggle='true']")
+        || menu?.querySelector("[role='menuitem'][aria-expanded]");
+    if (!toggle || toggle.closest("[inert]") || !isVisible(toggle) || toggle.getAttribute("aria-disabled") === "true") return null;
+    clickElementWithPointerEvents(toggle, false);
+    return await waitForChatGptReasoningState(read, 1200);
+  }
+
+  async function selectChatGptPreferences(_familyValue, effortValue, input) {
+    // Older pending requests must not restore a retired model preference.
+    const family = globalThis.YGS.CHATGPT_MODEL_FAMILIES.find((item) => item.value === "latest");
+    const effort = globalThis.YGS.CHATGPT_REASONING_EFFORTS.find((item) => item.value === effortValue);
+    if (!family || !effort) return false;
+    globalThis.YGS.log("ChatGPT selection requested", { model: family.label, effort: effort.label });
+    try {
+      let picker = await openChatGptPicker(input);
+      if (!picker) {
+        globalThis.YGS.warn("ChatGPT selection stopped: owned picker did not open");
+        return false;
+      }
+      if (!await setChatGptPickerView(picker.button, false)) {
+        globalThis.YGS.warn("ChatGPT selection stopped: simple panel not ready");
+        return false;
+      }
+      const initial = await waitForChatGptReasoningState(() => readChatGptSliderState(picker.button), 1200);
+      if (!initial) {
+        globalThis.YGS.warn("ChatGPT selection stopped: initial slider state not confirmed", getChatGptModelMenuDiagnostics(picker.button));
+        return false;
+      }
+      const values = ["instant", "medium", "high", "extra-high", "pro"];
+      const targetEffort = effort.value === "none" ? values[initial.value] : effort.value;
+
+      if (readChatGptModelFamily(picker.menu) !== family.value) {
+        const panel = await setChatGptPickerView(picker.button, true);
+        const findRow = () => {
+          const menu = findChatGptReasoningMenu(picker.button);
+          const active = menu?.querySelector("[data-testid='composer-model-picker-slider-advanced-view'][data-active='true']")
+            || menu?.querySelector("[data-model-picker-view='advanced'] > [data-active='true'][aria-hidden='false']");
+          const rows = Array.from(active?.querySelectorAll("[role='menuitemradio']") || [])
+            .filter((row) => family.matchers.includes(normalizeForComparison(row.textContent)))
+            .filter((row) => isVisible(row) && !row.closest("[inert]") && row.getAttribute("aria-disabled") !== "true");
+          return rows.length === 1 ? rows[0] : null;
+        };
+        const row = panel && findRow();
+        if (!row) {
+          globalThis.YGS.warn("ChatGPT requested model unavailable", family.label);
+          return false;
+        }
+        globalThis.YGS.log("ChatGPT model activation", { model: family.label, method: "pointer" });
+        clickElementWithPointerEvents(row, false);
+        const confirmModel = async () => {
+          await waitForChatGptReasoningState(() => {
+            const menu = findChatGptReasoningMenu(picker.button);
+            return !menu || readChatGptModelFamily(menu) === family.value;
+          });
+          // A successful radio activation may dismiss the menu. Reopen to read, not to reselect.
+          if (!findChatGptReasoningMenu(picker.button)) {
+            const reopened = await openChatGptPicker(input);
+            if (!reopened) return false;
+            picker = reopened;
+          }
+          return readChatGptModelFamily(findChatGptReasoningMenu(picker.button)) === family.value;
+        };
+        if (!await confirmModel()) {
+          // A settled radio may accept Enter when the initial pointer event was missed.
+          const retryRow = findRow();
+          if (retryRow) {
+            globalThis.YGS.log("ChatGPT model activation", { model: family.label, method: "keyboard" });
+            retryRow.focus();
+            for (const type of ["keydown", "keyup"]) {
+              retryRow.dispatchEvent(new KeyboardEvent(type, { bubbles: true, cancelable: true, composed: true, key: "Enter", code: "Enter" }));
+            }
+          }
+          if (!await confirmModel()) return false;
+        }
+      }
+      globalThis.YGS.log("ChatGPT model selected", family.label);
+      if (!await setChatGptPickerView(picker.button, false)) return false;
+      if (readChatGptModelFamily(findChatGptReasoningMenu(picker.button)) !== family.value) return false;
+      if (!await selectChatGptSliderEffort({ value: targetEffort, label: targetEffort }, input, picker.button)) return false;
+
+      picker = await openChatGptPicker(input);
+      if (!picker || !await setChatGptPickerView(picker.button, false)) return false;
+      const final = await waitForChatGptReasoningState(() => readChatGptSliderState(picker.button), 1200);
+      const confirmed = readChatGptModelFamily(findChatGptReasoningMenu(picker.button)) === family.value
+        && final && values[final.value] === targetEffort;
+      closeOpenMenusIfPossible();
+      if (!confirmed) return false;
+      const closed = await waitForChatGptReasoningState(() => {
+        const pill = findChatGptModelButton(input);
+        return !findChatGptReasoningMenu(picker.button) && pill
+          && parseChatGptEffortLabel(pill.innerText || pill.textContent) === targetEffort;
+      });
+      if (closed) globalThis.YGS.log("ChatGPT model and effort confirmed", { model: family.label, effort: targetEffort });
+      return Boolean(closed);
+    } catch (error) {
+      globalThis.YGS.warn("ChatGPT selection failed", error);
+      return false;
+    } finally {
+      closeOpenMenusIfPossible();
+    }
+  }
+
   async function selectChatGptModelIfRequested(modelValue, input) {
     const option = getChatGptModelOption(modelValue);
     if (!option || option.value === "none") {
-      globalThis.YGS.log("ChatGPT model selection skipped");
+      globalThis.YGS.log("ChatGPT reasoning selection skipped");
       return true;
     }
 
-    globalThis.YGS.log("ChatGPT model selection requested", option.label);
+    globalThis.YGS.log("ChatGPT reasoning selection requested", option.label);
 
     const button = await waitForChatGptModelButton(input, 5000);
     if (!button) {
       globalThis.YGS.warn(
-        `ChatGPT model selector not found; continuing with current model: ${option.label}; candidates=${JSON.stringify(getChatGptModelSelectorDiagnostics())}`
+        `ChatGPT reasoning selector not found: ${option.label}`
       );
       return false;
     }
 
-    globalThis.YGS.log(`ChatGPT model selector found: ${getElementLabel(button)}`);
+    globalThis.YGS.log(`ChatGPT reasoning selector found: ${getElementLabel(button)}`);
 
     if (elementIndicatesSelectedChatGptModel(button, option)) {
-      globalThis.YGS.log("ChatGPT model already selected", option.label);
+      globalThis.YGS.log("ChatGPT reasoning already selected", option.label);
       return true;
     }
 
     try {
-      clickElementLikeUser(button);
-      await delay(900);
+      if (button.getAttribute("aria-expanded") !== "true") {
+        clickElementWithPointerEvents(button, false);
+      }
+      const menu = await waitForChatGptReasoningState(() => findChatGptReasoningMenu(button), 1800);
+      if (menu?.querySelector("[data-model-reasoning-effort-slider]")) {
+        return await selectChatGptSliderEffort(option, input, button);
+      }
 
       const item = await waitForChatGptModelMenuItem(option, button, 6000);
+
       if (!item) {
         globalThis.YGS.warn(
-          `ChatGPT model option not found; continuing with current model: ${option.label}; menuCandidates=${JSON.stringify(getChatGptModelMenuDiagnostics(button))}`
+          `ChatGPT reasoning option not found: ${option.label}; menuCandidates=${JSON.stringify(getChatGptModelMenuDiagnostics(button))}`
         );
         closeOpenMenusIfPossible();
         return false;
       }
 
-      globalThis.YGS.log(`ChatGPT model option found: ${getElementLabel(item)}`);
+      globalThis.YGS.log(`ChatGPT reasoning option found: ${getElementLabel(item)}`);
       activateChatGptModelMenuItem(item);
 
       const selectedButton = await waitForSelectedChatGptModel(input, option, 2500);
       if (selectedButton && elementIndicatesSelectedChatGptModel(selectedButton, option)) {
-        globalThis.YGS.log("ChatGPT model selected", option.label);
+        globalThis.YGS.log("ChatGPT reasoning selected", option.label);
       } else {
-        globalThis.YGS.log("ChatGPT model selection attempted", option.label);
+        globalThis.YGS.warn("ChatGPT reasoning selection unconfirmed", option.label);
+        return false;
       }
 
       return true;
     } catch (error) {
-      globalThis.YGS.warn("ChatGPT model selection failed; continuing with current model", error);
+      globalThis.YGS.warn("ChatGPT reasoning selection failed", error);
       closeOpenMenusIfPossible();
       return false;
     }
@@ -411,8 +583,96 @@
 
   function getChatGptModelOption(value) {
     const normalized = normalizeForComparison(value);
-    return globalThis.YGS.CHATGPT_MODELS.find((model) => model.value === normalized)
-      || globalThis.YGS.CHATGPT_MODELS.find((model) => model.value === "none");
+    return globalThis.YGS.CHATGPT_REASONING_EFFORTS.find((model) => model.value === normalized)
+      || globalThis.YGS.CHATGPT_REASONING_EFFORTS.find((model) => model.value === "none");
+  }
+
+  function parseChatGptEffortLabel(text) {
+    const label = normalizeForComparison(text).replace(/^(?:gpt[- ]?)?\d+(?:\.\d+)?(?: sol)?\s*/, "");
+    return ({ instant: "instant", "즉시": "instant", medium: "medium", "중간": "medium",
+      high: "high", "높음": "high", "extra high": "extra-high", "매우 높음": "extra-high", pro: "pro" })[label] || "";
+  }
+
+  function findChatGptReasoningMenu(button) {
+    if (!button.id) return null;
+    return Array.from(document.querySelectorAll("[role='menu'][data-state='open']"))
+      .find((menu) => menu.getAttribute("aria-labelledby") === button.id && isVisible(menu)) || null;
+  }
+
+  async function waitForChatGptReasoningState(read, timeoutMs = 800) {
+    const deadline = Date.now() + timeoutMs;
+    do {
+      const state = read();
+      if (state) return state;
+      await delay(80);
+    } while (Date.now() < deadline);
+    return null;
+  }
+
+  function readChatGptSliderState(button) {
+    const menu = findChatGptReasoningMenu(button);
+    const panel = menu?.querySelector("[data-testid='composer-model-picker-slider-simple-view'][data-active='true']")
+      || menu?.querySelector("[data-model-picker-view='simple'] > [data-active='true'][aria-hidden='false']");
+    const slider = panel?.querySelector("[data-model-reasoning-effort-slider] [role='slider']")
+      || panel?.querySelector("[data-reasoning-slider='true'] [data-model-picker-power-slider] [role='slider']");
+    const control = slider?.closest("[role='menuitem']");
+    const labelElement = menu?.querySelector("[role='menuitem'][data-model-picker-view-toggle='true']")
+      || menu?.querySelector("[role='menuitem'][aria-expanded]");
+    const label = labelElement?.innerText || labelElement?.textContent || "";
+    const model = menu?.querySelector("[role='menuitemradio'][aria-checked='true']")?.textContent?.trim();
+    const raw = slider?.getAttribute("aria-valuenow");
+    const value = raw == null || raw.trim() === "" ? NaN : Number(raw);
+    const values = ["instant", "medium", "high", "extra-high", "pro"];
+    // Numeric positions are accepted only with the captured bounds AND matching live text.
+    if (!control || control.closest("[inert]") || !isVisible(control) || !model
+      || control.getAttribute("aria-disabled") === "true" || slider.getAttribute("aria-disabled") === "true"
+      || slider.getAttribute("aria-valuemin") !== "0" || slider.getAttribute("aria-valuemax") !== "4"
+      || !Number.isInteger(value) || !values[value] || parseChatGptEffortLabel(label) !== values[value]) return null;
+    return { control, value, model, label: normalizeForComparison(label) };
+  }
+
+  async function selectChatGptSliderEffort(option, input, button) {
+    const target = ["instant", "medium", "high", "extra-high", "pro"].indexOf(option.value);
+    try {
+      if (target < 0) {
+        globalThis.YGS.warn("ChatGPT slider effort is invalid", option.label);
+        return false;
+      }
+      let state = await waitForChatGptReasoningState(() => readChatGptSliderState(button));
+      if (!state) return false;
+      const model = state.model;
+      for (let step = 0; state.value !== target && step < 4; step += 1) {
+        const next = state.value + Math.sign(target - state.value);
+        const key = next > state.value ? "ArrowRight" : "ArrowLeft";
+        const keyCode = key === "ArrowRight" ? 39 : 37;
+        state.control.focus();
+        for (const type of ["keydown", "keyup"]) {
+          state.control.dispatchEvent(new KeyboardEvent(type, {
+            bubbles: true, cancelable: true, composed: true, key, code: key, keyCode, which: keyCode
+          }));
+        }
+        state = await waitForChatGptReasoningState(() => {
+          const current = readChatGptSliderState(button);
+          return current?.value === next && current.model === model ? current : null;
+        });
+        if (!state) {
+          globalThis.YGS.warn("ChatGPT slider step not confirmed", { key, expectedValue: next });
+          return false;
+        }
+        globalThis.YGS.log("ChatGPT slider step confirmed", { value: state.value, label: state.label, model });
+      }
+      if (state.value !== target) return false;
+      closeOpenMenusIfPossible();
+      const confirmed = await waitForChatGptReasoningState(() => {
+        const selected = findChatGptModelButton(input);
+        return !findChatGptReasoningMenu(button) && selected
+          && parseChatGptEffortLabel(selected.innerText || selected.textContent) === option.value;
+      });
+      if (confirmed) globalThis.YGS.log("ChatGPT reasoning selected via slider", option.label);
+      return Boolean(confirmed);
+    } finally {
+      closeOpenMenusIfPossible();
+    }
   }
 
   async function waitForChatGptModelButton(input, timeoutMs) {
@@ -466,13 +726,11 @@
   function findExactChatGptModelButton(input) {
     const selectors = [
       "form[data-type='unified-composer'] button.__composer-pill[data-tone='accent'][aria-haspopup='menu']",
+      "form[data-type='unified-composer'] button.__composer-pill[data-tone='neutral'][aria-haspopup='menu']",
+      "form[data-type='unified-composer'] button.__composer-pill[aria-haspopup='menu']",
       "button.__composer-pill[data-tone='accent'][aria-haspopup='menu']",
-      "button.__composer-pill[aria-haspopup='menu']",
-      "button[data-testid='model-switcher-dropdown-button']",
-      "button[aria-label='모델 선택기']",
-      "button[aria-label='Model selector']",
-      "button[aria-label*='model switcher' i]",
-      "button[style*='--vt-thread-model-switcher']"
+      "button.__composer-pill[data-tone='neutral'][aria-haspopup='menu']",
+      "button.__composer-pill[aria-haspopup='menu']"
     ];
     const candidates = [];
 
@@ -561,7 +819,7 @@
     const label = getElementLabel(element);
     let score = 0;
 
-    for (const model of globalThis.YGS.CHATGPT_MODELS) {
+    for (const model of globalThis.YGS.CHATGPT_REASONING_EFFORTS) {
       if (model.value !== "none" && getModelSelectorMatchers(model).some((matcher) => labelMatchesChatGptModelMatcher(label, matcher))) {
         score += 80;
       }
@@ -592,18 +850,7 @@
       return labelLooksLikeAnyChatGptModelSelector(label) || isComposerModelButton(element, input);
     }
 
-    const testId = normalizeForComparison(element.getAttribute("data-testid") || "");
-    if (testId === "model-switcher-dropdown-button") {
-      return true;
-    }
-
-    const ariaLabel = normalizeForComparison(element.getAttribute("aria-label") || "");
-    if (ariaLabel === "모델 선택기" || ariaLabel === "model selector") {
-      return true;
-    }
-
-    const style = String(element.getAttribute("style") || "");
-    return style.includes("--vt-thread-model-switcher");
+    return false;
   }
 
   function isAmbiguousHeaderModelButton(element) {
@@ -624,6 +871,8 @@
 
     if (element.matches("button.__composer-pill[data-tone='accent'][aria-haspopup='menu']")) {
       score += 180;
+    } else if (element.matches("button.__composer-pill[data-tone='neutral'][aria-haspopup='menu']")) {
+      score += 175;
     } else if (element.matches("button.__composer-pill[aria-haspopup='menu']")) {
       score += 170;
     }
@@ -633,19 +882,6 @@
       && labelLooksLikeAnyChatGptModelSelector(getElementLabel(element))
     ) {
       score += 120;
-    }
-
-    if (element.matches("button[data-testid='model-switcher-dropdown-button']")) {
-      score += 100;
-    }
-
-    const ariaLabel = normalizeForComparison(element.getAttribute("aria-label") || "");
-    if (ariaLabel === "모델 선택기" || ariaLabel === "model selector") {
-      score += 90;
-    }
-
-    if (String(element.getAttribute("style") || "").includes("--vt-thread-model-switcher")) {
-      score += 80;
     }
 
     if (element.closest("form[data-type='unified-composer'], [data-composer-surface='true']")) {
@@ -688,6 +924,7 @@
     const selectors = [
       "[role='menuitem']",
       "[role='option']",
+      "[role='menuitemradio']",
       "[data-radix-collection-item]",
       "button",
       "[role='button']",
@@ -763,7 +1000,7 @@
               continue;
             }
 
-            if (isChatGptThinkingEffortAction(element)) {
+            if (isChatGptProVariantTriggerControl(element)) {
               continue;
             }
 
@@ -812,7 +1049,7 @@
             if (
               element instanceof HTMLElement
               && isVisible(element)
-              && !isChatGptThinkingEffortAction(element)
+              && !isChatGptProVariantTriggerControl(element)
               && elementMatchesChatGptModelOption(element, option)
               && !labelContainsMultipleChatGptModelOptions(getElementLabel(element))
             ) {
@@ -829,37 +1066,21 @@
   }
 
   function getExactChatGptModelMenuItemSelectors(option) {
-    if (option.value === "instant") {
-      return [
-        "[role='menuitemradio'][data-testid='model-switcher-gpt-5-5']"
-      ];
-    }
-
-    if (option.value === "thinking") {
-      return [
-        "[role='menuitemradio'][data-testid='model-switcher-gpt-5-5-thinking']",
-        "[data-model-picker-thinking-effort-menu-item='true'][data-testid='model-switcher-gpt-5-5-thinking']"
-      ];
-    }
-
-    if (option.value === "pro") {
-      return [
-        "[role='menuitemradio'][data-testid='model-switcher-gpt-5-5-pro']",
-        "[data-model-picker-thinking-effort-menu-item='true'][data-testid='model-switcher-gpt-5-5-pro']"
-      ];
-    }
-
+    void option;
     return [];
   }
 
-  function isChatGptThinkingEffortAction(element) {
+  function isChatGptProVariantTriggerControl(element) {
     if (!(element instanceof HTMLElement)) {
       return false;
     }
 
-    return element.matches("[data-model-picker-thinking-effort-action='true']")
-      || Boolean(element.closest("[data-model-picker-thinking-effort-action='true']"))
-      || normalizeForComparison(element.getAttribute("aria-label") || "") === "연산량";
+    return element.matches("[data-composer-intelligence-pro-effort-action='true']")
+      || Boolean(element.closest("[data-composer-intelligence-pro-effort-action='true']"))
+      || normalizeForComparison(element.getAttribute("data-testid") || "") === "composer-intelligence-pro-thinking-effort-trigger"
+      || normalizeForComparison(element.getAttribute("aria-label") || "") === "연산량"
+      || normalizeForComparison(element.getAttribute("aria-label") || "").includes("강도")
+      || normalizeForComparison(element.getAttribute("aria-label") || "").includes("effort");
   }
 
   function getExactChatGptModelMenuRoots(button) {
@@ -973,14 +1194,14 @@
   function activateChatGptModelMenuItem(item) {
     const target = resolveChatGptModelMenuClickTarget(item);
     const label = getElementLabel(target);
-    globalThis.YGS.log(`ChatGPT model option click target: ${label}`);
+    globalThis.YGS.log(`ChatGPT reasoning option click target: ${label}`);
 
     clickElementLikeUser(target);
     clickElementCenterTargetLikeUser(target);
   }
 
   function resolveChatGptModelMenuClickTarget(element, option) {
-    const direct = element.closest?.("button, [role='menuitem'], [role='option'], [role='button'], [data-radix-collection-item]");
+    const direct = element.closest?.("button, [role='menuitem'], [role='menuitemradio'], [role='option'], [role='button'], [data-radix-collection-item]");
     if (direct instanceof HTMLElement && isVisible(direct)) {
       return direct;
     }
@@ -995,7 +1216,7 @@
         const label = getElementLabel(current);
         const labelMatches = option ? elementMatchesChatGptModelOption(current, option) : Boolean(label);
         const rowSized = rect.width >= 120 && rect.height >= 28 && rect.height <= 96;
-        const roleLike = current.matches("[role='menuitem'], [role='option'], [role='button'], [data-radix-collection-item], button");
+        const roleLike = current.matches("[role='menuitem'], [role='menuitemradio'], [role='option'], [role='button'], [data-radix-collection-item], button");
         const score = (labelMatches ? 60 : 0)
           + (rowSized ? 40 : 0)
           + (roleLike ? 40 : 0)
@@ -1056,7 +1277,7 @@
       return;
     }
 
-    const target = centerTarget.closest("button, [role='menuitem'], [role='option'], [role='button'], [data-radix-collection-item]")
+    const target = centerTarget.closest("button, [role='menuitem'], [role='menuitemradio'], [role='option'], [role='button'], [data-radix-collection-item]")
       || centerTarget;
     clickElementLikeUser(target);
   }
@@ -1067,23 +1288,29 @@
       .filter((element) => element instanceof HTMLElement && isVisible(element))
       .map((element) => getElementLabel(element))
       .filter((label) => label && (
-        label.includes("instant")
-        || label.includes("thinking")
+        label.includes("즉시")
+        || label.includes("중간")
+        || label.includes("높음")
+        || label.includes("매우 높음")
+        || label.includes("instant")
+        || label.includes("medium")
+        || label.includes("high")
         || label.includes("pro")
-        || label.includes("라이트 모드")
-        || label.includes("표준")
-        || label.includes("model")
-        || label.includes("mode")
-        || label.includes("모델")
-        || label.includes("모드")
+        || label.includes("추론")
+        || label.includes("intelligence")
+        || label.includes("기본")
         || label.includes("확장")
+        || label.includes("basic")
+        || label.includes("extended")
       ))
       .slice(0, 12);
   }
 
   function getChatGptModelMenuDiagnostics(button) {
     const buttonRect = button.getBoundingClientRect();
-    return Array.from(document.querySelectorAll("[role='menuitem'], [role='option'], button, [role='button'], div"))
+    const menu = findChatGptReasoningMenu(button);
+    if (!menu) return [];
+    return Array.from(menu.querySelectorAll("[role='menuitem'], [role='menuitemradio'], [role='option']"))
       .filter((element) => element instanceof HTMLElement && isVisible(element))
       .map((element) => {
         const rect = element.getBoundingClientRect();
@@ -1094,13 +1321,20 @@
         };
       })
       .filter((entry) => entry.label && entry.label.length <= 180 && (
-        entry.label.includes("instant")
-        || entry.label.includes("thinking")
+        entry.label.includes("즉시")
+        || entry.label.includes("중간")
+        || entry.label.includes("높음")
+        || entry.label.includes("매우 높음")
+        || entry.label.includes("instant")
+        || entry.label.includes("medium")
+        || entry.label.includes("high")
         || entry.label.includes("pro")
-        || entry.label.includes("라이트 모드")
-        || entry.label.includes("표준")
+        || entry.label.includes("추론")
+        || entry.label.includes("intelligence")
+        || entry.label.includes("기본")
         || entry.label.includes("확장")
-        || entry.label.includes("헤비 모드")
+        || entry.label.includes("basic")
+        || entry.label.includes("extended")
       ))
       .slice(0, 12);
   }
@@ -1111,12 +1345,14 @@
   }
 
   function elementIndicatesSelectedChatGptModel(element, option) {
+    const effort = parseChatGptEffortLabel(element.innerText || element.textContent);
+    if (effort) return effort === option.value;
     const label = getElementLabel(element);
     if (!label) {
       return false;
     }
 
-    if (option.value === "thinking" && (label.includes("pro") || label.includes("instant"))) {
+    if ((option.value === "medium" || option.value === "high" || option.value === "extra-high") && label.includes("pro")) {
       return false;
     }
 
@@ -1124,7 +1360,7 @@
   }
 
   function labelLooksLikeAnyChatGptModelSelector(label) {
-    return globalThis.YGS.CHATGPT_MODELS
+    return globalThis.YGS.CHATGPT_REASONING_EFFORTS
       .filter((model) => model.value !== "none")
       .some((model) => getModelSelectorMatchers(model).some((matcher) => labelMatchesChatGptModelMatcher(label, matcher)));
   }
@@ -1187,6 +1423,14 @@
       return false;
     }
 
+    if (prefix === "높음" && labelHasChatGptModelPrefix(label, "매우 높음")) {
+      return false;
+    }
+
+    if (prefix === "high" && labelHasChatGptModelPrefix(label, "extra high")) {
+      return false;
+    }
+
     if (/^[a-z0-9 .+_-]+$/.test(prefix)) {
       const escapedPrefix = prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       return new RegExp(`(^|\\s)${escapedPrefix}(?=\\s|$|[+~–-]|\\d)`).test(label);
@@ -1196,7 +1440,7 @@
   }
 
   function labelContainsMultipleChatGptModelOptions(label) {
-    const matches = globalThis.YGS.CHATGPT_MODELS
+    const matches = globalThis.YGS.CHATGPT_REASONING_EFFORTS
       .filter((model) => model.value !== "none")
       .filter((model) => getModelOptionMatchers(model).some((matcher) => {
         const normalizedMatcher = normalizeForComparison(matcher);
@@ -1263,7 +1507,9 @@
       "lightmode",
       "standard",
       "extended",
-      "heavymode"
+      "heavymode",
+      "연산량",
+      "강도"
     ].includes(compact);
   }
 

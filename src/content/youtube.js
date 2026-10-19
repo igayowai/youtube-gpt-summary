@@ -285,7 +285,8 @@ globalThis.YGS = globalThis.YGS || {};
           prompt: built.prompt,
           autoSubmit: settings.autoSubmit === true,
           useTemporaryChat: settings.useTemporaryChat !== false,
-          chatgptModel: settings.chatgptModel,
+          chatgptModelFamily: settings.chatgptModelFamily,
+          chatgptReasoningEffort: settings.chatgptReasoningEffort,
           createdAt: Date.now(),
           source: "youtube",
           mode: built.mode,
@@ -308,11 +309,10 @@ globalThis.YGS = globalThis.YGS || {};
       ...partialPayload
     };
 
-    if (payload.chatgptModel && payload.chatgptModel !== "none") {
-      globalThis.YGS.log("Using ChatGPT model setting", {
-        chatgptModel: payload.chatgptModel
-      });
-    }
+    globalThis.YGS.log("Using ChatGPT selection settings", {
+      model: payload.chatgptModelFamily,
+      effort: payload.chatgptReasoningEffort
+    });
 
     try {
       const response = await chrome.runtime.sendMessage({

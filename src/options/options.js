@@ -4,7 +4,7 @@ globalThis.YGS = globalThis.YGS || {};
   const customPrompt = document.getElementById("customPrompt");
   const promptModeInputs = Array.from(document.querySelectorAll("input[name='promptMode']"));
   const outputLanguage = document.getElementById("outputLanguage");
-  const chatgptModel = document.getElementById("chatgptModel");
+  const chatgptReasoningEffort = document.getElementById("chatgptReasoningEffort");
   const geminiModel = document.getElementById("geminiModel");
   const geminiThinkingLevel = document.getElementById("geminiThinkingLevel");
   const aggressiveTranscriptPrefetch = document.getElementById("aggressiveTranscriptPrefetch");
@@ -17,10 +17,10 @@ globalThis.YGS = globalThis.YGS || {};
     input.addEventListener("change", updatePromptModeCardStates);
   });
 
-  renderOutputLanguageOptions();
-  renderChatGptModelOptions();
-  renderGeminiModelOptions();
-  renderGeminiThinkingLevelOptions();
+  renderSelectOptions(outputLanguage, globalThis.YGS.OUTPUT_LANGUAGES);
+  renderSelectOptions(chatgptReasoningEffort, globalThis.YGS.CHATGPT_REASONING_EFFORTS);
+  renderSelectOptions(geminiModel, globalThis.YGS.GEMINI_MODELS);
+  renderSelectOptions(geminiThinkingLevel, globalThis.YGS.GEMINI_THINKING_LEVELS);
   await loadSettings();
 
   saveButton.addEventListener("click", async () => {
@@ -31,7 +31,7 @@ globalThis.YGS = globalThis.YGS || {};
         customPrompt: customPrompt.value,
         promptMode: getSelectedPromptMode(),
         outputLanguage: outputLanguage.value,
-        chatgptModel: chatgptModel.value,
+        chatgptReasoningEffort: chatgptReasoningEffort.value,
         geminiModel: geminiModel.value,
         geminiThinkingLevel: geminiThinkingLevel.value,
         aggressiveTranscriptPrefetch: aggressiveTranscriptPrefetch.checked,
@@ -39,15 +39,7 @@ globalThis.YGS = globalThis.YGS || {};
         autoSubmit: autoSubmit.checked
       });
 
-      customPrompt.value = saved.customPrompt ?? "";
-      setSelectedPromptMode(saved.promptMode);
-      outputLanguage.value = saved.outputLanguage;
-      chatgptModel.value = saved.chatgptModel;
-      geminiModel.value = saved.geminiModel;
-      geminiThinkingLevel.value = saved.geminiThinkingLevel;
-      aggressiveTranscriptPrefetch.checked = saved.aggressiveTranscriptPrefetch;
-      useTemporaryChat.checked = saved.useTemporaryChat;
-      autoSubmit.checked = saved.autoSubmit;
+      applySettingsToForm(saved);
       status.textContent = "Saved.";
       setTimeout(() => {
         status.textContent = "";
@@ -61,27 +53,23 @@ globalThis.YGS = globalThis.YGS || {};
   async function loadSettings() {
     try {
       const settings = await globalThis.YGS.getSettings();
-      customPrompt.value = settings.customPrompt ?? "";
-      setSelectedPromptMode(settings.promptMode);
-      outputLanguage.value = settings.outputLanguage;
-      chatgptModel.value = settings.chatgptModel;
-      geminiModel.value = settings.geminiModel;
-      geminiThinkingLevel.value = settings.geminiThinkingLevel;
-      aggressiveTranscriptPrefetch.checked = settings.aggressiveTranscriptPrefetch;
-      useTemporaryChat.checked = settings.useTemporaryChat;
-      autoSubmit.checked = settings.autoSubmit;
+      applySettingsToForm(settings);
     } catch (error) {
       globalThis.YGS.warn("Failed to load settings", error);
-      customPrompt.value = "";
-      setSelectedPromptMode(globalThis.YGS.DEFAULT_SETTINGS.promptMode);
-      outputLanguage.value = globalThis.YGS.DEFAULT_SETTINGS.outputLanguage;
-      chatgptModel.value = globalThis.YGS.DEFAULT_SETTINGS.chatgptModel;
-      geminiModel.value = globalThis.YGS.DEFAULT_SETTINGS.geminiModel;
-      geminiThinkingLevel.value = globalThis.YGS.DEFAULT_SETTINGS.geminiThinkingLevel;
-      aggressiveTranscriptPrefetch.checked = globalThis.YGS.DEFAULT_SETTINGS.aggressiveTranscriptPrefetch;
-      useTemporaryChat.checked = globalThis.YGS.DEFAULT_SETTINGS.useTemporaryChat;
-      autoSubmit.checked = globalThis.YGS.DEFAULT_SETTINGS.autoSubmit;
+      applySettingsToForm({ ...globalThis.YGS.DEFAULT_SETTINGS, customPrompt: null });
     }
+  }
+
+  function applySettingsToForm(settings) {
+    customPrompt.value = settings.customPrompt ?? "";
+    setSelectedPromptMode(settings.promptMode);
+    outputLanguage.value = settings.outputLanguage;
+    chatgptReasoningEffort.value = settings.chatgptReasoningEffort;
+    geminiModel.value = settings.geminiModel;
+    geminiThinkingLevel.value = settings.geminiThinkingLevel;
+    aggressiveTranscriptPrefetch.checked = settings.aggressiveTranscriptPrefetch;
+    useTemporaryChat.checked = settings.useTemporaryChat;
+    autoSubmit.checked = settings.autoSubmit;
   }
 
   function getSelectedPromptMode() {
@@ -110,45 +98,12 @@ globalThis.YGS = globalThis.YGS || {};
     }
   }
 
-  function renderOutputLanguageOptions() {
-    outputLanguage.replaceChildren(
-      ...globalThis.YGS.OUTPUT_LANGUAGES.map((language) => {
+  function renderSelectOptions(select, choices) {
+    select.replaceChildren(
+      ...choices.map(({ value, label }) => {
         const option = document.createElement("option");
-        option.value = language.value;
-        option.textContent = language.label;
-        return option;
-      })
-    );
-  }
-
-  function renderChatGptModelOptions() {
-    chatgptModel.replaceChildren(
-      ...globalThis.YGS.CHATGPT_MODELS.map((model) => {
-        const option = document.createElement("option");
-        option.value = model.value;
-        option.textContent = model.label;
-        return option;
-      })
-    );
-  }
-
-  function renderGeminiModelOptions() {
-    geminiModel.replaceChildren(
-      ...globalThis.YGS.GEMINI_MODELS.map((model) => {
-        const option = document.createElement("option");
-        option.value = model.value;
-        option.textContent = model.label;
-        return option;
-      })
-    );
-  }
-
-  function renderGeminiThinkingLevelOptions() {
-    geminiThinkingLevel.replaceChildren(
-      ...globalThis.YGS.GEMINI_THINKING_LEVELS.map((level) => {
-        const option = document.createElement("option");
-        option.value = level.value;
-        option.textContent = level.label;
+        option.value = value;
+        option.textContent = label;
         return option;
       })
     );

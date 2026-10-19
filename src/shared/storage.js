@@ -8,7 +8,7 @@ globalThis.YGS.getSettings = async function getSettings() {
     return normalizeSettings(defaults);
   }
 
-  const data = await localStorage.get(defaults);
+  const data = await localStorage.get([...Object.keys(defaults), "chatgptModel"]);
   return normalizeSettings(data);
 };
 
@@ -18,7 +18,7 @@ function normalizeSettings(data) {
     customPrompt: globalThis.YGS.normalizeCustomPrompt(data.customPrompt),
     promptMode: normalizePromptMode(data.promptMode),
     outputLanguage: normalizeOutputLanguage(data.outputLanguage),
-    chatgptModel: normalizeChatGptModel(data.chatgptModel),
+    ...normalizeChatGptSelection(data),
     geminiModel: normalizeGeminiModel(data.geminiModel),
     geminiThinkingLevel: normalizeGeminiThinkingLevel(data.geminiThinkingLevel),
     aggressiveTranscriptPrefetch: typeof data.aggressiveTranscriptPrefetch === "boolean"
@@ -30,30 +30,16 @@ function normalizeSettings(data) {
 }
 
 globalThis.YGS.saveSettings = async function saveSettings(settings) {
-  const normalized = {
-    customPrompt: globalThis.YGS.normalizeCustomPrompt(settings?.customPrompt),
-    promptMode: normalizePromptMode(settings?.promptMode),
-    outputLanguage: normalizeOutputLanguage(settings?.outputLanguage),
-    chatgptModel: normalizeChatGptModel(settings?.chatgptModel),
-    geminiModel: normalizeGeminiModel(settings?.geminiModel),
-    geminiThinkingLevel: normalizeGeminiThinkingLevel(settings?.geminiThinkingLevel),
-    aggressiveTranscriptPrefetch: typeof settings?.aggressiveTranscriptPrefetch === "boolean"
-      ? settings.aggressiveTranscriptPrefetch
-      : globalThis.YGS.DEFAULT_SETTINGS.aggressiveTranscriptPrefetch,
-    autoSubmit: typeof settings?.autoSubmit === "boolean"
-      ? settings.autoSubmit
-      : globalThis.YGS.DEFAULT_SETTINGS.autoSubmit,
-    useTemporaryChat: typeof settings?.useTemporaryChat === "boolean"
-      ? settings.useTemporaryChat
-      : globalThis.YGS.DEFAULT_SETTINGS.useTemporaryChat
-  };
+  const normalized = normalizeSettings(settings ?? {});
 
   const localStorage = getChromeStorageArea("local");
   if (!localStorage) {
     throw new Error("chrome.storage.local is unavailable");
   }
 
-  await localStorage.set(normalized);
+  // The retired model preference remains untouched for rollback compatibility.
+  const { chatgptModelFamily, ...persisted } = normalized;
+  await localStorage.set(persisted);
   return normalized;
 };
 
@@ -70,14 +56,30 @@ function normalizeOutputLanguage(value) {
     : globalThis.YGS.DEFAULT_SETTINGS.outputLanguage;
 }
 
-function normalizeChatGptModel(value) {
+function normalizeChatGptSelection(data) {
+  // Keep the legacy field intact on disk; new explicit preferences take precedence.
+  const effort = Object.prototype.hasOwnProperty.call(data, "chatgptReasoningEffort")
+    ? data.chatgptReasoningEffort : data.chatgptModel;
+  return {
+    chatgptModelFamily: "latest",
+    chatgptReasoningEffort: normalizeChatGptReasoningEffort(effort)
+  };
+}
+
+function normalizeChatGptReasoningEffort(value) {
   const model = String(value || "").trim().toLowerCase();
-  if (model === "medium" || model === "high") {
-    return "thinking";
+  if (model === "thinking") {
+    return "high";
   }
-  return getChatGptModelValues().includes(model)
+  if (["pro", "pro-basic", "pro-extended", "pro_basic", "probasic", "pro_extended", "proextended"].includes(model)) {
+    return "pro";
+  }
+  if (model === "extra_high" || model === "extrahigh") {
+    return "extra-high";
+  }
+  return getChatGptReasoningEffortValues().includes(model)
     ? model
-    : globalThis.YGS.DEFAULT_SETTINGS.chatgptModel;
+    : globalThis.YGS.DEFAULT_SETTINGS.chatgptReasoningEffort;
 }
 
 function normalizeGeminiModel(value) {
@@ -104,8 +106,8 @@ function getOutputLanguageValues() {
   return globalThis.YGS.OUTPUT_LANGUAGES.map((language) => language.value);
 }
 
-function getChatGptModelValues() {
-  return globalThis.YGS.CHATGPT_MODELS.map((model) => model.value);
+function getChatGptReasoningEffortValues() {
+  return globalThis.YGS.CHATGPT_REASONING_EFFORTS.map((model) => model.value);
 }
 
 function getGeminiModelValues() {
@@ -211,7 +213,7 @@ globalThis.YGS.savePendingPrompt = async function savePendingPrompt(payload) {
     prompt: payload.prompt,
     autoSubmit: payload.autoSubmit === true,
     useTemporaryChat: payload.useTemporaryChat !== false,
-    chatgptModel: normalizeChatGptModel(payload.chatgptModel),
+    ...normalizeChatGptSelection(payload),
     geminiModel: normalizeGeminiModel(payload.geminiModel),
     geminiThinkingLevel: normalizeGeminiThinkingLevel(payload.geminiThinkingLevel),
     createdAt: Number(payload.createdAt || Date.now()),
@@ -262,7 +264,7 @@ globalThis.YGS.getPendingPrompt = async function getPendingPrompt(requestId) {
     return null;
   }
 
-  return payload;
+  return { ...payload, ...normalizeChatGptSelection(payload) };
 };
 
 globalThis.YGS.clearPendingPrompt = async function clearPendingPrompt(requestId) {

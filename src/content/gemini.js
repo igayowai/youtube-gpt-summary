@@ -8,6 +8,27 @@ globalThis.YGS = globalThis.YGS || {};
 
   const INPUT_WAIT_MS = 20000;
   const POLL_MS = 300;
+  const FAST_GEMINI_TEMPORARY_CHAT_BUTTON_SELECTORS = [
+    "[data-test-id='temp-chat-button-container'] [data-test-id='temp-chat-button'] button[aria-label]",
+    "[data-test-id='temp-chat-button'] button[aria-label]",
+    "temp-chat-button gem-icon-button button[aria-label]",
+    "temp-chat-button button[aria-label]",
+    "[data-test-id='temp-chat-button-container'] button[aria-label='임시 채팅']",
+    "[data-test-id='temp-chat-button-container'] button[aria-label='Temporary Chat']",
+    "button[aria-label='임시 채팅']",
+    "button[aria-label='Temporary Chat']",
+    "button[mattooltip='임시 채팅']",
+    "button[mattooltip='Temporary Chat']"
+  ];
+  const SLOW_GEMINI_TEMPORARY_CHAT_TARGET_SELECTORS = [
+    "[data-test-id='temp-chat-button-container']",
+    "[data-test-id='temp-chat-button']",
+    "[data-test-id='temp-chat-button'] mat-icon",
+    "mat-icon[data-mat-icon-name='gemini_chat_temp']",
+    "mat-icon[data-mat-icon-name='close']",
+    "mat-icon[fonticon='gemini_chat_temp']",
+    "mat-icon[fonticon='close']"
+  ];
 
   const inputAdapters = [
     {
@@ -148,7 +169,8 @@ globalThis.YGS = globalThis.YGS || {};
 
     const button = await waitForGeminiTemporaryChatButton(9000);
     if (button) {
-      const confirmedByClick = await clickGeminiTemporaryChatWithRetry(button);
+      const readyButton = await waitForStableGeminiTemporaryChatButton(button, 250) || button;
+      const confirmedByClick = await clickGeminiTemporaryChatWithRetry(readyButton);
       if (confirmedByClick) {
         return true;
       }
@@ -157,7 +179,7 @@ globalThis.YGS = globalThis.YGS || {};
       return false;
     }
 
-    const finalReason = await waitForGeminiTemporaryChatActive(3000);
+    const finalReason = await waitForGeminiTemporaryChatActive(1500);
     if (finalReason) {
       globalThis.YGS.log("Gemini Temporary Chat confirmed after click", finalReason);
       return true;
@@ -168,13 +190,19 @@ globalThis.YGS = globalThis.YGS || {};
   }
 
   async function clickGeminiTemporaryChatWithRetry(initialButton) {
-    for (let attempt = 1; attempt <= 2; attempt += 1) {
+    const activationPlans = [
+      { method: "keyboard", waitMs: 700 },
+      { method: "pointer", waitMs: 700 },
+      { method: "native", waitMs: 700 }
+    ];
+
+    for (let index = 0; index < activationPlans.length; index += 1) {
       const activeReason = getGeminiTemporaryChatActiveReason();
       if (activeReason) {
         return true;
       }
 
-      const button = attempt === 1
+      const button = index === 0
         ? initialButton
         : await waitForGeminiTemporaryChatButton(3000);
 
@@ -182,15 +210,22 @@ globalThis.YGS = globalThis.YGS || {};
         return false;
       }
 
+      const plan = activationPlans[index];
       try {
-        globalThis.YGS.log("Clicking Gemini Temporary Chat button", getElementLabel(button));
-        clickGeminiTemporaryChatControl(button);
-        await delay(attempt === 1 ? 250 : 500);
+        globalThis.YGS.log("Clicking Gemini Temporary Chat button", {
+          label: getElementLabel(button),
+          method: plan.method,
+          readyState: document.readyState,
+          pageAgeMs: Math.round(performance.now())
+        });
+        clickGeminiTemporaryChatControl(button, plan.method);
+        await delay(80);
       } catch (error) {
         globalThis.YGS.warn("Gemini Temporary Chat button click failed", error);
       }
 
-      const confirmedReason = await waitForGeminiTemporaryChatActive(attempt === 1 ? 2500 : 4500);
+      const confirmedReason = getGeminiTemporaryChatActiveReason()
+        || await waitForGeminiTemporaryChatActive(plan.waitMs);
       if (confirmedReason) {
         globalThis.YGS.log("Gemini Temporary Chat confirmed after click", confirmedReason);
         return true;
@@ -200,20 +235,73 @@ globalThis.YGS = globalThis.YGS || {};
     return false;
   }
 
-  function clickGeminiTemporaryChatControl(container) {
-    const clickTarget = findExactGeminiTemporaryChatButton()
+  function clickGeminiTemporaryChatControl(container, method = "pointer") {
+    const clickTarget = findInnerGeminiTemporaryChatButton(container)
+      || findExactGeminiTemporaryChatButton()
       || findBestClickableTemporaryChatTarget(container)
       || container;
     if (clickTarget !== container) {
       globalThis.YGS.log("Clicking Gemini Temporary Chat inner control", getElementLabel(clickTarget));
     }
 
-    clickElementLikeUser(clickTarget);
+    if (method === "native") {
+      nativeClickElement(clickTarget);
+    } else if (method === "keyboard") {
+      dispatchKeyboardActivation(clickTarget);
+    } else {
+      clickElementLikeUser(clickTarget, { nativeClick: false });
+    }
 
     if (clickTarget === container) {
-      clickElementAt(container, 0.25, 0.5);
-      clickElementAt(container, 0.75, 0.5);
+      clickElementAt(container, 0.5, 0.5);
     }
+  }
+
+  async function waitForStableGeminiTemporaryChatButton(initialButton, timeoutMs) {
+    const startedAt = Date.now();
+    let lastSignature = getTemporaryChatButtonSignature(initialButton);
+    let stableSince = lastSignature ? Date.now() : 0;
+    let latestButton = initialButton;
+
+    while (Date.now() - startedAt < timeoutMs) {
+      const button = findGeminiTemporaryChatButton();
+      const signature = getTemporaryChatButtonSignature(button);
+      if (button && signature && signature === lastSignature) {
+        latestButton = button;
+        if (!stableSince) {
+          stableSince = Date.now();
+        }
+
+        if (Date.now() - stableSince >= 150) {
+          return latestButton;
+        }
+      } else {
+        latestButton = button || latestButton;
+        lastSignature = signature;
+        stableSince = signature ? Date.now() : 0;
+      }
+
+      await delay(80);
+    }
+
+    return latestButton instanceof HTMLElement ? latestButton : null;
+  }
+
+  function getTemporaryChatButtonSignature(button) {
+    if (!(button instanceof HTMLElement) || !isVisible(button) || isDisabled(button)) {
+      return "";
+    }
+
+    const rect = button.getBoundingClientRect();
+    return [
+      button.tagName.toLowerCase(),
+      button.getAttribute("data-test-id") || "",
+      button.getAttribute("aria-label") || "",
+      Math.round(rect.left),
+      Math.round(rect.top),
+      Math.round(rect.width),
+      Math.round(rect.height)
+    ].join("|");
   }
 
   function findBestClickableTemporaryChatTarget(container) {
@@ -268,7 +356,7 @@ globalThis.YGS = globalThis.YGS || {};
         return reason;
       }
 
-      await delay(POLL_MS);
+      await delay(80);
     }
 
     return "";
@@ -299,6 +387,7 @@ globalThis.YGS = globalThis.YGS || {};
       .filter((element) => element instanceof HTMLElement)
       .filter(isVisible)
       .filter((element) => !isDisabled(element))
+      .filter((element) => !isSlowGeminiTemporaryChatTarget(element))
       .map((element) => ({
         element,
         score: getGeminiTemporaryChatButtonScore(element)
@@ -310,21 +399,15 @@ globalThis.YGS = globalThis.YGS || {};
   }
 
   function findExactGeminiTemporaryChatButton() {
-    const selectors = [
-      "button[data-test-id='temp-chat-button']",
-      "[data-test-id='temp-chat-button']",
-      "[data-test-id='temp-chat-button-container'] button",
-      "temp-chat-button button",
-      "button[aria-label='임시 채팅']",
-      "button[aria-label='Temporary Chat']",
-      "button[mattooltip='임시 채팅']",
-      "button[mattooltip='Temporary Chat']"
-    ];
-
-    for (const selector of selectors) {
+    for (const selector of FAST_GEMINI_TEMPORARY_CHAT_BUTTON_SELECTORS) {
       try {
         const element = document.querySelector(selector);
-        if (element instanceof HTMLElement && isVisible(element) && !isDisabled(element)) {
+        if (
+          element instanceof HTMLElement
+          && isVisible(element)
+          && !isDisabled(element)
+          && !isSlowGeminiTemporaryChatTarget(element)
+        ) {
           return element;
         }
       } catch (_) {
@@ -333,6 +416,73 @@ globalThis.YGS = globalThis.YGS || {};
     }
 
     return null;
+  }
+
+  function isSlowGeminiTemporaryChatTarget(element) {
+    return SLOW_GEMINI_TEMPORARY_CHAT_TARGET_SELECTORS.some((selector) => {
+      try {
+        return element.matches(selector);
+      } catch (_) {
+        return false;
+      }
+    });
+  }
+
+  function findInnerGeminiTemporaryChatButton(container) {
+    if (!(container instanceof HTMLElement)) {
+      return null;
+    }
+
+    const candidates = [
+      container,
+      ...Array.from(container.querySelectorAll("button[aria-label], button[mattooltip], button.mdc-icon-button, [role='button']"))
+    ]
+      .filter((element) => element instanceof HTMLElement)
+      .filter(isVisible)
+      .filter((element) => !isDisabled(element))
+      .filter((element) => !isSlowGeminiTemporaryChatTarget(element))
+      .map((element) => ({
+        element,
+        score: getGeminiTemporaryChatInnerButtonScore(element)
+      }))
+      .filter((entry) => entry.score > 0)
+      .sort((left, right) => right.score - left.score);
+
+    return candidates[0]?.element || null;
+  }
+
+  function getGeminiTemporaryChatInnerButtonScore(element) {
+    const label = normalizeForComparison(getElementLabel(element));
+    const iconName = normalizeForComparison(
+      element.querySelector("[data-mat-icon-name]")?.getAttribute("data-mat-icon-name") || ""
+    );
+    let score = 0;
+
+    if (element.tagName.toLowerCase() === "button") {
+      score += 8;
+    }
+
+    if (label.includes("임시 채팅") || label.includes("temporary chat")) {
+      score += 12;
+    }
+
+    if (label.includes("임시") || label.includes("temporary")) {
+      score += 5;
+    }
+
+    if (iconName.includes("gemini_chat_temp")) {
+      score += 10;
+    }
+
+    if (element.closest("[data-test-id='temp-chat-button-container']")) {
+      score += 6;
+    }
+
+    if (element.closest("[data-test-id='temp-chat-button']")) {
+      score += 6;
+    }
+
+    return score;
   }
 
   function getGeminiTemporaryChatButtonScore(element) {
@@ -364,6 +514,16 @@ globalThis.YGS = globalThis.YGS || {};
   }
 
   function getGeminiTemporaryChatActiveReason() {
+    const activeIcon = document.querySelector(
+      "[data-test-id='temp-chat-button'] mat-icon[data-mat-icon-name='close'], "
+        + "[data-test-id='temp-chat-button'] mat-icon[fonticon='close'], "
+        + "[data-test-id='temp-chat-button-container'] mat-icon[data-mat-icon-name='close'], "
+        + "[data-test-id='temp-chat-button-container'] mat-icon[fonticon='close']"
+    );
+    if (activeIcon instanceof HTMLElement && isVisible(activeIcon)) {
+      return "temporary-chat close icon";
+    }
+
     const bodyText = normalizeForComparison(document.body?.innerText || "");
     const activeMarkers = [
       "ask in a temporary chat",
@@ -428,7 +588,8 @@ globalThis.YGS = globalThis.YGS || {};
         ariaPressed: element.getAttribute("aria-pressed") || "",
         ariaChecked: element.getAttribute("aria-checked") || "",
         dataState: element.getAttribute("data-state") || "",
-        testId: element.getAttribute("data-test-id") || ""
+        testId: element.getAttribute("data-test-id") || "",
+        slowBlacklisted: isSlowGeminiTemporaryChatTarget(element)
       }))
       .slice(0, 8);
 
@@ -1774,6 +1935,26 @@ globalThis.YGS = globalThis.YGS || {};
     }
   }
 
+  function nativeClickElement(element) {
+    try {
+      element.scrollIntoView?.({ block: "center", inline: "center" });
+    } catch (_) {
+      // Ignore scroll failures.
+    }
+
+    try {
+      element.focus?.({ preventScroll: true });
+    } catch (_) {
+      // Ignore focus failures.
+    }
+
+    try {
+      element.click?.();
+    } catch (_) {
+      // Some framework-managed elements may reject direct click.
+    }
+  }
+
   function dispatchKeyboardActivation(element) {
     try {
       element.focus?.({ preventScroll: true });
@@ -1781,7 +1962,7 @@ globalThis.YGS = globalThis.YGS || {};
       // Ignore focus failures.
     }
 
-    for (const key of ["Enter", " "]) {
+    for (const key of ["Enter"]) {
       const code = key === " " ? "Space" : "Enter";
       for (const type of ["keydown", "keyup"]) {
         try {

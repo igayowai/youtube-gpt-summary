@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YouTube GPT Summary",
-  "version": "0.1.90",
+  "version": "0.1.103",
   "description": "Use accessible YouTube transcripts or captions to prepare prompts for ChatGPT or Gemini.",
   "minimum_chrome_version": "102",
   "permissions": [
