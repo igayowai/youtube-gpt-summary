@@ -4,7 +4,7 @@ const { createRuntime, exposeProvider, Button, providerEnvironment } = require("
 
 // Reduced sketch of the 2026-10-19 composer, not browser evidence. A real send removes the
 // send button, shows a "중지" stop button, empties the editor and moves the URL to /c/<id>.
-function fixture({ acceptOnClick = 1, clearOnly = false } = {}) {
+function fixture({ acceptOnClick = 1, clearOnly = false, detached = false } = {}) {
   const h = createRuntime();
   const env = providerEnvironment();
   let text = "prompt text";
@@ -33,9 +33,22 @@ function fixture({ acceptOnClick = 1, clearOnly = false } = {}) {
   stop.getAttribute = (name) => name === "aria-label" ? "중지" : null;
   env.location.pathname = "/";
   env.HTMLButtonElement = Button;
+  // Detached mode mirrors the 2026-10-19 re-render: the editor that received the prompt is
+  // detached, and a new editor inside the form (holding the same text) replaced it.
+  const live = new Button();
+  live.isConnected = true;
+  Object.defineProperty(live, "innerText", { get: () => text });
+  const form = { querySelectorAll: (selector) => selector.includes("보내기") && !sent ? [send] : [] };
+  live.closest = (selector) => selector === "form" ? form : null;
+  if (detached) {
+    input.isConnected = false;
+    const wrapper = { querySelectorAll: () => [] };
+    input.closest = (selector) => selector.includes("composer") ? wrapper : null;
+  }
   env.document.querySelectorAll = (selector) => {
     if (selector.includes("stop-button")) return sent ? [stop] : [];
-    if (selector.includes("보내기")) return sent ? [] : [send];
+    if (detached && selector.includes("data-composer-input")) return [live];
+    if (selector.includes("보내기")) return sent || detached ? [] : [send];
     return [];
   };
   env.Date = class extends Date { static now() { return now; } };
@@ -65,5 +78,11 @@ test("a late-accepted click (about 20 seconds in) is still confirmed", async () 
 test("an emptied editor without a send signal is not clicked again", async () => {
   const f = fixture({ clearOnly: true });
   assert.equal(await f.api.submitPrompt(f.input), false);
+  assert.equal(f.clicks(), 1);
+});
+
+test("a re-rendered composer is followed: the send button is found from the live editor", async () => {
+  const f = fixture({ detached: true });
+  assert.equal(await f.api.submitPrompt(f.input), true, JSON.stringify(f.h.logs));
   assert.equal(f.clicks(), 1);
 });

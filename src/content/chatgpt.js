@@ -1656,11 +1656,11 @@
       const remaining = SUBMIT_RETRY_WINDOW_MS - (Date.now() - startedAt);
       const button = await waitForSendButton(input, Math.max(remaining, 0));
       if (!button) {
-        note("send-button-missing", { buttons: describeComposerButtons(input) });
+        note("send-button-missing", { inputConnected: Boolean(input?.isConnected), buttons: describeComposerButtons(input) });
         break;
       }
 
-      note("click", { attempt });
+      note("click", { attempt, inputConnected: Boolean(input?.isConnected) });
       try {
         button.click();
       } catch (error) {
@@ -1707,7 +1707,7 @@
   }
 
   function describeComposerButtons(input) {
-    const roots = getComposerScopedSearchRoots(input);
+    const roots = getComposerScopedSearchRoots(resolveLiveComposerInput(input));
     const scope = roots[0] || document.querySelector("form") || document;
     return Array.from(scope.querySelectorAll("button")).slice(0, 8).map((button) => [
       button.getAttribute("type") || "",
@@ -1717,8 +1717,18 @@
     ].filter(Boolean).join(":"));
   }
 
+  // 2026-10-19 live check: ChatGPT re-rendered the composer after injection; the editor that
+  // received the prompt was detached and a new one (already holding the text) replaced it.
+  // Searching from the detached editor never found the send button.
+  function resolveLiveComposerInput(input) {
+    return input?.isConnected ? input : (findComposerInput() || input);
+  }
+
   function getLiveChatGptComposerText(input) {
-    const live = input?.isConnected ? input : findComposerInput();
+    const live = resolveLiveComposerInput(input);
+    if (live && !live.isConnected) {
+      return "";
+    }
     if (!live) {
       return "";
     }
@@ -1768,7 +1778,7 @@
   }
 
   function findSendButton(input) {
-    const roots = getComposerScopedSearchRoots(input);
+    const roots = getComposerScopedSearchRoots(resolveLiveComposerInput(input));
     const exactButton = findExactSendButton(roots);
     if (exactButton) {
       return exactButton;

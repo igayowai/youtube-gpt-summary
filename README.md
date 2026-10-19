@@ -1,6 +1,8 @@
-# YouTube GPT Summary Extension v0.1.107
+# YouTube GPT Summary Extension v0.1.108
 
 Project-local rules for Claude Code live in [CLAUDE.md](CLAUDE.md). Keep `README.md` focused on product behavior, setup, changelog, and debugging notes.
+
+v0.1.108 (2026-10-19): root cause of the ChatGPT auto-submit failure. After injection ChatGPT re-renders the composer; the editor the extension held was detached and a new editor holding the same text replaced it. The send-button search started from the detached editor and found nothing for 45 s (`send-button-missing`, empty button list). The send search and the submission check now follow the live composer.
 
 v0.1.107 (2026-10-19): in the v0.1.106 live check the extension gave up about 8-20 s after injection without any retry log, while a page click right after sent in 0.6 s. ChatGPT send now waits for the send button across the whole 45 s window, records a step trace (button found or missing, each click outcome, composer buttons) and prints it as one text line. All `[YGS]` log objects are now printed as JSON text so automation tools can read them without DevTools.
 
@@ -443,6 +445,8 @@ useTemporaryChat === false 또는 런타임 임시채팅 판정이 성공함
 ## 디버깅
 
 사용자에게 별도 실패 UI를 보여주지 않는 대신 DevTools Console에 `[YGS]` 로그를 남깁니다.
+
+v0.1.107부터 `[YGS]` 로그의 객체는 JSON 글자로 찍혀서, DevTools를 펼치지 않아도 Claude in Chrome 같은 자동화 도구가 그대로 읽을 수 있습니다. ChatGPT 자동 전송은 성공·실패 때 단계 기록 한 줄(`ChatGPT submission ...`)을 남깁니다.
 
 확인 위치:
 
