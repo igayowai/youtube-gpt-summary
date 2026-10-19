@@ -248,7 +248,10 @@
       "form[data-type='unified-composer'] #prompt-textarea.ProseMirror[contenteditable='true']",
       "form[data-type='unified-composer'] [contenteditable='true'][role='textbox'][aria-label*='ChatGPT']",
       "form[data-type='unified-composer'] textarea[name='prompt-textarea']",
-      "#prompt-textarea.ProseMirror[contenteditable='true']"
+      "#prompt-textarea.ProseMirror[contenteditable='true']",
+      // 2026-10-19 composer: no form data-type or #prompt-textarea id.
+      "form [data-composer-input] div.ProseMirror[contenteditable='true'][role='textbox']",
+      "form div.ProseMirror[contenteditable='true'][role='textbox'][data-composer-markdown]"
     ];
 
     for (const selector of selectors) {
@@ -408,13 +411,11 @@
     // Wait for the active view rather than toggling away from it.
     if (activePanel()) return await waitForChatGptReasoningState(read, 1200);
     const menu = findChatGptReasoningMenu(button);
-    // The new advanced view returns to the slider by selecting a model row.
-    // Select only Latest, never the arbitrary previously selected model.
+    // The advanced view returns to the slider by selecting a model row.
+    // Re-select only the already checked row so the user's current model never changes.
     const currentView = menu?.querySelector("[data-model-picker-view]");
-    const latest = globalThis.YGS.CHATGPT_MODEL_FAMILIES.find(item => item.value === "latest");
     const rows = !advanced && currentView?.getAttribute("data-model-picker-view") === "advanced"
-      ? Array.from(currentView.querySelectorAll("[role='menuitemradio']"))
-        .filter(row => latest.matchers.includes(normalizeForComparison(row.textContent))) : [];
+      ? Array.from(currentView.querySelectorAll("[role='menuitemradio'][aria-checked='true']")) : [];
     const toggle = !advanced && currentView
       ? (rows.length === 1 ? rows[0] : null)
       : menu?.querySelector("[role='menuitem'][data-model-picker-view-toggle='true']")
@@ -425,11 +426,16 @@
   }
 
   async function selectChatGptPreferences(_familyValue, effortValue, input) {
-    // Older pending requests must not restore a retired model preference.
-    const family = globalThis.YGS.CHATGPT_MODEL_FAMILIES.find((item) => item.value === "latest");
+    // 2026-10-19 user decision: never change the ChatGPT model. The model list changes
+    // often (Latest row removed, GPT-6 added); only the reasoning effort is automated.
+    // Older pending requests may still carry a model family; it is ignored on purpose.
     const effort = globalThis.YGS.CHATGPT_REASONING_EFFORTS.find((item) => item.value === effortValue);
-    if (!family || !effort) return false;
-    globalThis.YGS.log("ChatGPT selection requested", { model: family.label, effort: effort.label });
+    if (!effort) return false;
+    if (effort.value === "none") {
+      globalThis.YGS.log("ChatGPT effort selection skipped; current model and effort kept");
+      return true;
+    }
+    globalThis.YGS.log("ChatGPT selection requested", { model: "unchanged", effort: effort.label });
     try {
       let picker = await openChatGptPicker(input);
       if (!picker) {
@@ -446,70 +452,26 @@
         return false;
       }
       const values = ["instant", "medium", "high", "extra-high", "pro"];
-      const targetEffort = effort.value === "none" ? values[initial.value] : effort.value;
-
-      if (readChatGptModelFamily(picker.menu) !== family.value) {
-        const panel = await setChatGptPickerView(picker.button, true);
-        const findRow = () => {
-          const menu = findChatGptReasoningMenu(picker.button);
-          const active = menu?.querySelector("[data-testid='composer-model-picker-slider-advanced-view'][data-active='true']")
-            || menu?.querySelector("[data-model-picker-view='advanced'] > [data-active='true'][aria-hidden='false']");
-          const rows = Array.from(active?.querySelectorAll("[role='menuitemradio']") || [])
-            .filter((row) => family.matchers.includes(normalizeForComparison(row.textContent)))
-            .filter((row) => isVisible(row) && !row.closest("[inert]") && row.getAttribute("aria-disabled") !== "true");
-          return rows.length === 1 ? rows[0] : null;
-        };
-        const row = panel && findRow();
-        if (!row) {
-          globalThis.YGS.warn("ChatGPT requested model unavailable", family.label);
-          return false;
-        }
-        globalThis.YGS.log("ChatGPT model activation", { model: family.label, method: "pointer" });
-        clickElementWithPointerEvents(row, false);
-        const confirmModel = async () => {
-          await waitForChatGptReasoningState(() => {
-            const menu = findChatGptReasoningMenu(picker.button);
-            return !menu || readChatGptModelFamily(menu) === family.value;
-          });
-          // A successful radio activation may dismiss the menu. Reopen to read, not to reselect.
-          if (!findChatGptReasoningMenu(picker.button)) {
-            const reopened = await openChatGptPicker(input);
-            if (!reopened) return false;
-            picker = reopened;
-          }
-          return readChatGptModelFamily(findChatGptReasoningMenu(picker.button)) === family.value;
-        };
-        if (!await confirmModel()) {
-          // A settled radio may accept Enter when the initial pointer event was missed.
-          const retryRow = findRow();
-          if (retryRow) {
-            globalThis.YGS.log("ChatGPT model activation", { model: family.label, method: "keyboard" });
-            retryRow.focus();
-            for (const type of ["keydown", "keyup"]) {
-              retryRow.dispatchEvent(new KeyboardEvent(type, { bubbles: true, cancelable: true, composed: true, key: "Enter", code: "Enter" }));
-            }
-          }
-          if (!await confirmModel()) return false;
-        }
-      }
-      globalThis.YGS.log("ChatGPT model selected", family.label);
-      if (!await setChatGptPickerView(picker.button, false)) return false;
-      if (readChatGptModelFamily(findChatGptReasoningMenu(picker.button)) !== family.value) return false;
-      if (!await selectChatGptSliderEffort({ value: targetEffort, label: targetEffort }, input, picker.button)) return false;
+      const model = initial.model;
+      if (!await selectChatGptSliderEffort({ value: effort.value, label: effort.label }, input, picker.button)) return false;
 
       picker = await openChatGptPicker(input);
       if (!picker || !await setChatGptPickerView(picker.button, false)) return false;
       const final = await waitForChatGptReasoningState(() => readChatGptSliderState(picker.button), 1200);
-      const confirmed = readChatGptModelFamily(findChatGptReasoningMenu(picker.button)) === family.value
-        && final && values[final.value] === targetEffort;
+      const confirmed = Boolean(final) && values[final.value] === effort.value && final.model === model;
       closeOpenMenusIfPossible();
-      if (!confirmed) return false;
+      if (!confirmed) {
+        globalThis.YGS.warn("ChatGPT final effort/model readback mismatch", {
+          expectedEffort: effort.value, actualEffort: final ? values[final.value] : null, modelBefore: model, modelAfter: final?.model || null
+        });
+        return false;
+      }
       const closed = await waitForChatGptReasoningState(() => {
         const pill = findChatGptModelButton(input);
         return !findChatGptReasoningMenu(picker.button) && pill
-          && parseChatGptEffortLabel(pill.innerText || pill.textContent) === targetEffort;
+          && parseChatGptEffortLabel(pill.innerText || pill.textContent) === effort.value;
       });
-      if (closed) globalThis.YGS.log("ChatGPT model and effort confirmed", { model: family.label, effort: targetEffort });
+      if (closed) globalThis.YGS.log("ChatGPT effort confirmed; model unchanged", { model, effort: effort.value });
       return Boolean(closed);
     } catch (error) {
       globalThis.YGS.warn("ChatGPT selection failed", error);
@@ -725,6 +687,9 @@
 
   function findExactChatGptModelButton(input) {
     const selectors = [
+      // 2026-10-19 composer trigger: semantic reasoning target, no __composer-pill class.
+      "button[data-composer-navigation-target='reasoning'][aria-haspopup='menu']",
+      "button[data-codex-intelligence-trigger='true'][aria-haspopup='menu']",
       "form[data-type='unified-composer'] button.__composer-pill[data-tone='accent'][aria-haspopup='menu']",
       "form[data-type='unified-composer'] button.__composer-pill[data-tone='neutral'][aria-haspopup='menu']",
       "form[data-type='unified-composer'] button.__composer-pill[aria-haspopup='menu']",
@@ -845,12 +810,20 @@
       return false;
     }
 
+    if (isSemanticChatGptReasoningTrigger(element)) {
+      return input ? isNearComposerInput(element, input) || Boolean(element.closest("form")) : true;
+    }
+
     if (element.matches("button.__composer-pill[aria-haspopup='menu']")) {
       const label = getElementLabel(element);
       return labelLooksLikeAnyChatGptModelSelector(label) || isComposerModelButton(element, input);
     }
 
     return false;
+  }
+
+  function isSemanticChatGptReasoningTrigger(element) {
+    return element.matches("button[data-composer-navigation-target='reasoning'][aria-haspopup='menu'], button[data-codex-intelligence-trigger='true'][aria-haspopup='menu']");
   }
 
   function isAmbiguousHeaderModelButton(element) {
@@ -869,7 +842,9 @@
   function getExactChatGptModelButtonScore(element, input) {
     let score = 0;
 
-    if (element.matches("button.__composer-pill[data-tone='accent'][aria-haspopup='menu']")) {
+    if (isSemanticChatGptReasoningTrigger(element)) {
+      score += 300;
+    } else if (element.matches("button.__composer-pill[data-tone='accent'][aria-haspopup='menu']")) {
       score += 180;
     } else if (element.matches("button.__composer-pill[data-tone='neutral'][aria-haspopup='menu']")) {
       score += 175;
@@ -1782,7 +1757,11 @@
       "button[data-testid='send-button']",
       "button.composer-submit-btn.composer-submit-button-color#composer-submit-button",
       "form[data-type='unified-composer'] button#composer-submit-button",
-      "form[data-type='unified-composer'] button[data-testid='send-button']"
+      "form[data-type='unified-composer'] button[data-testid='send-button']",
+      // 2026-10-19 composer: plain form submit button with a localized label only.
+      "button[type='submit'][aria-label='보내기']",
+      "button[type='submit'][aria-label='Send prompt']",
+      "button[type='submit'][aria-label='Send']"
     ];
 
     for (const root of roots.length ? roots : [document]) {

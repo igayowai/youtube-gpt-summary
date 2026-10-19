@@ -633,7 +633,7 @@ globalThis.YGS = globalThis.YGS || {};
 
     const modelAlreadySelected = !modelRequested || isGeminiModelSelectedBySelector(selector, model);
     const thinkingLevelAlreadySelected = !thinkingLevelRequested
-      || isGeminiThinkingLevelSelectedBySelectorLabel(selectorLabel, thinkingLevel);
+      || isGeminiThinkingLevelSelectedBySelector(selector, thinkingLevel);
 
     if (modelAlreadySelected && thinkingLevelAlreadySelected) {
       globalThis.YGS.log("Gemini model already selected", model.label);
@@ -1107,8 +1107,7 @@ globalThis.YGS = globalThis.YGS || {};
 
     while (Date.now() - startedAt < timeoutMs) {
       const selector = findGeminiModelSelector(input);
-      const label = selector ? getElementLabel(selector) : "";
-      if (selector && isGeminiThinkingLevelSelectedBySelectorLabel(label, level)) {
+      if (selector && getVisibleGeminiModelMenuRoots().length === 0 && isGeminiThinkingLevelSelectedBySelector(selector, level)) {
         return true;
       }
 
@@ -1128,26 +1127,35 @@ globalThis.YGS = globalThis.YGS || {};
     return false;
   }
 
-  function isGeminiThinkingLevelSelectedBySelectorLabel(label, level) {
-    const normalized = normalizeForComparison(label);
+  // 2026-10-19 pill: primary text is the model (Flash-Lite, Flash, Pro, Argon) and the
+  // secondary text is the thinking level (보통, 최고가). The lowest level shows no secondary text.
+  function isGeminiThinkingLevelSelectedBySelector(selector, level) {
     if (!level || level.value === "none") {
       return true;
     }
 
-    if (level.value === "extended") {
-      return normalized.includes("extended");
+    const { primary, secondary } = getGeminiSelectorLabelParts(selector);
+    if (secondary) {
+      return isGeminiModelLabelMatch(secondary, level.selectedMatchers);
     }
 
-    if (level.value === "standard") {
-      return (
-        isAnyGeminiModelLabel(normalized)
-        || normalized.includes("flash-lite")
-        || normalized.includes("flash")
-        || normalized.includes("pro")
-      ) && !normalized.includes("extended");
-    }
+    return Boolean(primary) && level.value === "low";
+  }
 
-    return false;
+  function getGeminiSelectorLabelParts(selector) {
+    const container = selector?.querySelector?.("[data-test-id='logo-pill-label-container']")
+      || selector?.querySelector?.(".logo-pill-label-container");
+    let primary = container?.querySelector?.(".picker-primary-text")?.textContent?.trim() || "";
+    let secondary = container?.querySelector?.(".picker-secondary-text")?.textContent?.trim() || "";
+    if (!primary) {
+      const lines = String(selector?.innerText || "").split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+      primary = lines[0] || "";
+      secondary = secondary || lines[1] || "";
+    } else if (!secondary) {
+      const lines = String(container?.innerText || "").split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+      secondary = lines.find((line) => line !== primary) || "";
+    }
+    return { primary, secondary };
   }
 
   function getGeminiThinkingLevelRowValue(row) {
@@ -1168,8 +1176,11 @@ globalThis.YGS = globalThis.YGS || {};
   }
 
   function getGeminiMenuItemLabel(element) {
+    // Menu rows show a title line and a description line (e.g. "보통" / "균형 잡힌 깊이").
+    const firstLine = String(element?.innerText || "").split(/\r?\n/).map((line) => line.trim()).find(Boolean);
     return element?.querySelector?.(".label")?.textContent?.trim()
       || element?.querySelector?.(".label-container .label")?.textContent?.trim()
+      || firstLine
       || getElementLabel(element);
   }
 
@@ -1195,6 +1206,11 @@ globalThis.YGS = globalThis.YGS || {};
   function isGeminiModelSelectedBySelector(selector, model) {
     if (!(selector instanceof HTMLElement) || !model || model.value === "none") {
       return false;
+    }
+
+    const { primary } = getGeminiSelectorLabelParts(selector);
+    if (primary) {
+      return isGeminiModelLabelMatch(primary, model.selectedMatchers);
     }
 
     const displayLabel = getGeminiSelectorDisplayLabel(selector);
@@ -1430,6 +1446,10 @@ globalThis.YGS = globalThis.YGS || {};
       || label.includes("3.1 flash-lite")
       || label.includes("3.5 flash")
       || label.includes("3.1 pro")
+      || label.includes("3.8 flash")
+      || label.includes("4 argon")
+      || label.includes("최저가")
+      || label.includes("최고가")
       || label.includes("사고 수준")
       || label.includes("thinking_level")
       || label.includes("standard")

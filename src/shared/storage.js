@@ -96,7 +96,13 @@ function normalizeGeminiModel(value) {
 }
 
 function normalizeGeminiThinkingLevel(value) {
-  const level = String(value || "").trim().toLowerCase();
+  let level = String(value || "").trim().toLowerCase();
+  // Pre-2026-10-19 values: Standard was the default depth, Extended the deepest one.
+  if (level === "standard") {
+    level = "low";
+  } else if (level === "extended") {
+    level = "high";
+  }
   return getGeminiThinkingLevelValues().includes(level)
     ? level
     : globalThis.YGS.DEFAULT_SETTINGS.geminiThinkingLevel;

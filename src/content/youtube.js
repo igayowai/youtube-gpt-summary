@@ -739,6 +739,7 @@ globalThis.YGS = globalThis.YGS || {};
     const allowDomFallback = options.allowDomFallback !== false;
     const videoId = String(options.videoId || getVideoIdFromUrl(location.href) || "");
     const extractors = [
+      ["innertubeTranscriptPanel", () => extractTranscriptPanelEntries(videoId)],
       ["captionTracks", () => extractCaptionTrackTranscriptEntries(videoId)],
       ["innertubePlayerCaptionTracks", () => extractInnertubePlayerCaptionTranscriptEntries(videoId)],
       ["innertubeTranscript", () => extractInnertubeTranscriptEntries(videoId)]
@@ -1228,6 +1229,88 @@ ${html}`);
       entries.push({
         start: Number(node.getAttribute("t") || 0) / 1000,
         duration: Number(node.getAttribute("d") || 0) / 1000,
+        text
+      });
+    }
+
+    return normalizeTranscriptEntries(entries);
+  }
+
+  // 2026-10-19: YouTube's own transcript panel now loads through youtubei/v1/get_panel
+  // with panelId PAmodern_transcript_view. params is a small protobuf wrapping the video id:
+  // field 149 { field 1: videoId, field 3: 1 }. Observed working with a minimal WEB context,
+  // including videos whose visible panel never finishes loading.
+  async function extractTranscriptPanelEntries(videoId) {
+    if (!/^[\w-]{11}$/.test(videoId)) {
+      return [];
+    }
+
+    const ytcfg = extractYtcfgFromText(getInlineScriptsText());
+    const body = {
+      context: {
+        client: {
+          clientName: "WEB",
+          clientVersion: ytcfg?.INNERTUBE_CLIENT_VERSION || "2.20261016.01.00",
+          hl: ytcfg?.HL || document.documentElement.lang || "ko",
+          gl: ytcfg?.GL || "KR"
+        }
+      },
+      panelId: "PAmodern_transcript_view",
+      params: buildTranscriptPanelParams(videoId)
+    };
+
+    try {
+      const response = await fetch("https://www.youtube.com/youtubei/v1/get_panel?prettyPrint=false", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!response.ok) {
+        globalThis.YGS.log("Transcript panel request failed", response.status);
+        return [];
+      }
+
+      const entries = parseTranscriptPanelEntries(await response.json());
+      if (!entries.length) {
+        globalThis.YGS.log("Transcript panel response had no segments");
+      }
+      return entries;
+    } catch (error) {
+      globalThis.YGS.warn("Transcript panel fetch/parse failed", error);
+      return [];
+    }
+  }
+
+  function buildTranscriptPanelParams(videoId) {
+    const id = Array.from(new TextEncoder().encode(videoId));
+    const inner = [0x0a, id.length, ...id, 0x18, 0x01];
+    const bytes = [0xaa, 0x09, inner.length, ...inner];
+    return btoa(String.fromCharCode(...bytes));
+  }
+
+  function parseTranscriptPanelEntries(data) {
+    const wrappers = findObjectsContainingKey(data?.content || data, "transcriptSegmentViewModel", 100000);
+    const entries = [];
+
+    for (const wrapper of wrappers) {
+      const segment = wrapper?.transcriptSegmentViewModel;
+      if (!segment || typeof segment !== "object") {
+        continue;
+      }
+
+      const text = normalizeWhitespace(getTextFromTextRenderer(segment.simpleText) || getTextFromTextRenderer(segment.text));
+      if (!text) {
+        continue;
+      }
+
+      const startMs = parseFiniteNumber(segment.startMs ?? segment.startTimeMs);
+      entries.push({
+        start: Number.isFinite(startMs) ? startMs / 1000 : parseTimestampToSeconds(segment.timestamp),
+        duration: 0,
         text
       });
     }

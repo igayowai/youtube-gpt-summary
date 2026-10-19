@@ -78,7 +78,7 @@ test("Options loads saved legacy choices, custom text, and false flags", async (
   assert.equal(h.controls.chatgptModelFamily, undefined);
   assert.equal(h.controls.chatgptReasoningEffort.value, "pro");
   assert.equal(h.controls.geminiModel.value, "flash-lite");
-  assert.equal(h.controls.geminiThinkingLevel.value, "extended");
+  assert.equal(h.controls.geminiThinkingLevel.value, "high"); // pre-2026-10-19 Extended maps to 최고가
   assert.equal(h.controls.outputLanguage.value, "English");
   for (const id of ["aggressiveTranscriptPrefetch", "autoSubmit", "useTemporaryChat"]) {
     assert.equal(h.controls[id].checked, false);
@@ -92,8 +92,8 @@ test("Options save normalizes the form, updates selection and clears status on i
   c.customPrompt.value = "  new instruction  ";
   c.outputLanguage.value = "English";
   c.chatgptReasoningEffort.value = "extra-high";
-  c.geminiModel.value = "pro";
-  c.geminiThinkingLevel.value = "extended";
+  c.geminiModel.value = "argon";
+  c.geminiThinkingLevel.value = "medium";
   c.aggressiveTranscriptPrefetch.checked = false;
   c.autoSubmit.checked = false;
   c.useTemporaryChat.checked = false;
@@ -104,7 +104,7 @@ test("Options save normalizes the form, updates selection and clears status on i
   await c.saveButton.fire("click");
   assert.deepEqual(h.local.data, {
     customPrompt: "new instruction", promptMode: "custom", outputLanguage: "English",
-    chatgptReasoningEffort: "extra-high", geminiModel: "pro", geminiThinkingLevel: "extended",
+    chatgptReasoningEffort: "extra-high", geminiModel: "argon", geminiThinkingLevel: "medium",
     aggressiveTranscriptPrefetch: false, autoSubmit: false, useTemporaryChat: false
   });
   assert.equal(c.customPrompt.value, "new instruction");

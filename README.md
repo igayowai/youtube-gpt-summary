@@ -1,6 +1,8 @@
-# YouTube GPT Summary Extension v0.1.103
+# YouTube GPT Summary Extension v0.1.104
 
 Project-local rules for Claude Code live in [CLAUDE.md](CLAUDE.md). Keep `README.md` focused on product behavior, setup, changelog, and debugging notes.
+
+v0.1.104 (2026-10-19) follows the 2026-10-19 UI changes. ChatGPT: the extension no longer changes the model (the Latest row is gone); it only sets the reasoning effort and fails closed if the checked model changes. New composer, trigger and send selectors. Gemini: adds `4 Argon`, updates Flash-Lite/Flash names, and replaces Standard/Extended with `최저가`/`보통`/`최고가` (saved Standard maps to 최저가, Extended to 최고가). YouTube: the fast transcript path now uses `youtubei/v1/get_panel`. [Observations](docs/ui-dom-captures/live-ui-2026-10-19.md).
 
 v0.1.103 (2026-09-25) fixes `simple panel not ready` after ChatGPT removed the old panel test IDs, toggle aria-expanded and slider anchor. New semantic view/slider anchors coexist with the earlier selectors. Latest-only and final effort verification remain required. [Current capture and verification](docs/ui-dom-captures/chatgpt/new-chat/model-picker-2026-09-25.md). No ZIP; installed-extension execution awaits Reload.
 

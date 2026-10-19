@@ -163,24 +163,33 @@ test("picker keeps the pointer path and never toggles an already-open menu", asy
   }
 });
 
-test("September 25 semantic anchors select Latest and every effort without legacy test IDs", async () => {
+// 2026-10-19 user decision: the extension never changes the ChatGPT model, only the effort.
+test("semantic anchors set every effort and keep whichever model is checked", async () => {
   for (const model of families) {
     for (const [value, effort] of efforts.entries()) {
       const f = fixture({ modern: true, model, value: (value + 2) % 5 });
-      assert.equal(await f.api.selectChatGptPreferences(model, effort, null), true, JSON.stringify(f.h.logs));
-      assert.deepEqual(f.current(), { model: "latest", value, opened: false });
+      assert.equal(await f.api.selectChatGptPreferences("latest", effort, null), true, JSON.stringify(f.h.logs));
+      assert.deepEqual(f.current(), { model, value, opened: false });
+      assert.equal(f.actions.some(action => action[0] === "model"), false);
     }
   }
 });
 
-test("modern advanced start returns through Latest; inactive panels and missing Latest fail closed", async () => {
-  const f = fixture({ modern: true, advanced: true, value: 3 });
-  assert.equal(await f.api.selectChatGptPreferences("latest", "none", null), true);
-  assert.deepEqual(f.current(), { model: "latest", value: 3, opened: false });
-  for (const options of [{ inactive: true }, { advanced: true, missing: "latest" }, { advanced: true, disabled: "latest" }]) {
+test("advanced start returns by re-selecting only the checked row; missing or blocked rows fail closed", async () => {
+  const f = fixture({ modern: true, advanced: true, model: "gpt-5.6-sol", value: 3 });
+  assert.equal(await f.api.selectChatGptPreferences("latest", "pro", null), true, JSON.stringify(f.h.logs));
+  assert.deepEqual(f.current(), { model: "gpt-5.6-sol", value: 4, opened: false });
+  const modelActions = f.actions.filter(action => action[0] === "model");
+  assert.ok(modelActions.length >= 1);
+  assert.ok(modelActions.every(action => action[1] === "gpt-5.6-sol"));
+  for (const options of [
+    { inactive: true }, { advanced: true, missing: "gpt-5.5" },
+    { advanced: true, disabled: "gpt-5.5" }, { advanced: true, blockModel: true }
+  ]) {
     const blocked = fixture({ modern: true, ...options });
     assert.equal(await blocked.api.selectChatGptPreferences("latest", "pro", null), false);
     assert.equal(blocked.actions.some(action => action[0] === "effort"), false);
+    assert.equal(blocked.current().model, "gpt-5.5");
   }
 });
 
@@ -211,55 +220,28 @@ test("blocked shortcut or unrelated menu cannot pass selection or change effort"
 test("shortcut-opened picker still verifies final model and effort", async () => {
   const f = fixture({ blockPickerPointer: true });
   assert.equal(await f.api.selectChatGptPreferences("latest", "pro", null), true);
-  assert.deepEqual(f.current(), { model: "latest", value: 4, opened: false });
+  assert.deepEqual(f.current(), { model: "gpt-5.5", value: 4, opened: false });
   assert.deepEqual(f.pickerEvents, ["pointer", "keydown", "keyup", "pointer", "keydown", "keyup"]);
 });
 
-test("all old requested families select Latest before all five efforts", async () => {
-  for (const model of families) {
+test("old requested families are ignored; every effort is set without touching the model", async () => {
+  for (const family of families) {
     for (const [value, effort] of efforts.entries()) {
       const f = fixture({ model: "gpt-5.5", retirementNotice: "10월 14일 지원 종료", value: (value + 2) % 5 });
-      assert.equal(await f.api.selectChatGptPreferences(model, effort, null), true, JSON.stringify(f.h.logs));
-      assert.deepEqual(f.current(), { model: "latest", value, opened: false });
-      assert.equal(f.actions.find(action => action[0] !== "view")[0], "model");
-      assert.equal(f.actions.filter(action => action[0] === "model").length, 1);
+      assert.equal(await f.api.selectChatGptPreferences(family, effort, null), true, JSON.stringify(f.h.logs));
+      assert.deepEqual(f.current(), { model: "gpt-5.5", value, opened: false });
+      assert.equal(f.actions.some(action => action[0] === "model" || action[0] === "view"), false);
     }
   }
 });
 
-test("Latest is actively selected while No selection preserves every initial effort", async () => {
+test("No selection opens nothing and changes nothing", async () => {
   for (let value = 0; value < 5; value += 1) {
     const f = fixture({ value });
     assert.equal(await f.api.selectChatGptPreferences("latest", "none", null), true);
-    assert.deepEqual(f.current(), { model: "latest", value, opened: false });
-    assert.equal(f.actions.some(action => action[0] === "effort"), false);
-  }
-  const unchanged = fixture({ model: "latest" });
-  assert.equal(await unchanged.api.selectChatGptPreferences("latest", "none", null), true);
-  assert.deepEqual(unchanged.actions, []);
-});
-
-test("model activation confirms pointer or Enter and tolerates menu dismissal", async () => {
-  for (const pointerMiss of [false, true]) {
-    for (const closeOnModel of [false, true]) {
-      const f = fixture({ pointerMiss, closeOnModel });
-      assert.equal(await f.api.selectChatGptPreferences("gpt-5.6-sol", "pro", null), true);
-      assert.deepEqual(f.current(), { model: "latest", value: 4, opened: false });
-      assert.equal(f.actions.filter(action => action[0] === "model").length, pointerMiss ? 2 : 1);
-    }
-  }
-});
-
-test("missing, disabled, duplicate, blocked model and blocked view fail before effort changes", async () => {
-  for (const options of [
-    { missing: "latest" }, { disabled: "latest" }, { duplicate: "latest" },
-    { blockModel: true }, { blockToggle: true }
-  ]) {
-    const f = fixture(options);
-    assert.equal(await f.api.selectChatGptPreferences("gpt-5.6-sol", "pro", null), false);
-    assert.equal(f.current().opened, false);
-    assert.equal(f.actions.some(action => action[0] === "effort"), false);
-    assert.ok(f.actions.filter(action => action[0] === "model").length <= 2);
+    assert.deepEqual(f.current(), { model: "gpt-5.5", value, opened: false });
+    assert.deepEqual(f.actions, []);
+    assert.deepEqual(f.pickerEvents, []);
   }
 });
 
@@ -272,8 +254,8 @@ test("opening animations and late slider rendering settle without toggling the a
   }
 });
 
-test("blocked slider, final model drift and invalid preferences fail closed", async () => {
-  for (const options of [{ blockSlider: true }, { finalDrift: true }]) {
+test("blocked slider, final model drift and invalid efforts fail closed", async () => {
+  for (const options of [{ blockSlider: true }, { finalDrift: true, model: "gpt-5.6-sol" }]) {
     const f = fixture(options);
     assert.equal(await f.api.selectChatGptPreferences("latest", "pro", null), false);
     assert.equal(f.current().opened, false);

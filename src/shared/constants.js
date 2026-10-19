@@ -1,6 +1,6 @@
 globalThis.YGS = globalThis.YGS || {};
 
-globalThis.YGS.VERSION = "0.1.103";
+globalThis.YGS.VERSION = "0.1.104";
 
 globalThis.YGS.DEFAULT_SETTINGS = {
   customPrompt: null,
@@ -259,39 +259,55 @@ globalThis.YGS.CHATGPT_REASONING_EFFORTS = [
 
 globalThis.YGS.GEMINI_MODELS = [
   { value: "none", label: "선택 없음", matchers: [], selectedMatchers: [] },
+  // 2026-10-19 Gemini menu: 3.5 Flash-Lite / 3.8 Flash / 3.1 Pro / 4 Argon.
+  // selectedMatchers compare against the pill's primary text (Flash-Lite, Flash, Pro, Argon).
   {
     value: "flash-lite",
-    label: "3.1 Flash-Lite",
-    matchers: ["3.1 flash-lite", "exact:flash-lite"],
-    selectedMatchers: ["exact:flash-lite", "exact:flash-lite extended", "3.1 flash-lite"]
+    label: "3.5 Flash-Lite",
+    matchers: ["3.5 flash-lite", "exact:flash-lite"],
+    selectedMatchers: ["exact:flash-lite"]
   },
   {
     value: "flash",
-    label: "3.5 Flash",
-    matchers: ["3.5 flash"],
-    selectedMatchers: ["exact:flash", "exact:flash extended", "3.5 flash"]
+    label: "3.8 Flash",
+    matchers: ["3.8 flash", "exact:flash"],
+    selectedMatchers: ["exact:flash"]
   },
   {
     value: "pro",
     label: "3.1 Pro",
     matchers: ["3.1 pro", "exact:pro"],
-    selectedMatchers: ["exact:pro", "exact:pro extended", "3.1 pro"]
+    selectedMatchers: ["exact:pro"]
+  },
+  {
+    value: "argon",
+    label: "4 Argon",
+    matchers: ["4 argon", "exact:argon"],
+    selectedMatchers: ["exact:argon"]
   }
 ];
 
+// 2026-10-19 Gemini "사고 수준" submenu, shared by every model: 최저가 / 보통 / 최고가.
+// The pill shows the level as secondary text except for the lowest level.
 globalThis.YGS.GEMINI_THINKING_LEVELS = [
   { value: "none", label: "선택 없음", matchers: [], selectedMatchers: [] },
   {
-    value: "standard",
-    label: "Standard",
-    matchers: ["exact:standard"],
-    selectedMatchers: ["exact:standard"]
+    value: "low",
+    label: "최저가 (빠르고 효율적)",
+    matchers: ["exact:최저가", "exact:최저", "exact:lowest", "exact:low"],
+    selectedMatchers: ["exact:최저가", "exact:최저", "exact:lowest", "exact:low"]
   },
   {
-    value: "extended",
-    label: "Extended",
-    matchers: ["exact:extended"],
-    selectedMatchers: ["exact:extended"]
+    value: "medium",
+    label: "보통 (균형 잡힌 깊이)",
+    matchers: ["exact:보통", "exact:medium", "exact:balanced"],
+    selectedMatchers: ["exact:보통", "exact:medium", "exact:balanced"]
+  },
+  {
+    value: "high",
+    label: "최고가 (매우 철저함)",
+    matchers: ["exact:최고가", "exact:최고", "exact:highest", "exact:high"],
+    selectedMatchers: ["exact:최고가", "exact:최고", "exact:highest", "exact:high"]
   }
 ];
 
