@@ -1,5 +1,6 @@
 # ChatGPT New-Chat UI Capture Index
 
+- [2026-10-19 composer and model list changes](../../live-ui-2026-10-19.md): composer trigger, editor and send button lost the old ids; menu anchors unchanged; `최신` row gone (GPT-6 / GPT-5.6 Sol). Reduced sketch.
 - [2026-09-25 semantic model-picker anchors](model-picker-2026-09-25.md): v0.1.103 compatibility fix; replaces missing test-ID assumptions on this observed surface.
 
 Scope:
