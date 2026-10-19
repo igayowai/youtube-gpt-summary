@@ -1,6 +1,8 @@
-# YouTube GPT Summary Extension v0.1.104
+# YouTube GPT Summary Extension v0.1.105
 
 Project-local rules for Claude Code live in [CLAUDE.md](CLAUDE.md). Keep `README.md` focused on product behavior, setup, changelog, and debugging notes.
+
+v0.1.105 (2026-10-19) fixes a false ChatGPT auto-submit success found in the live v0.1.104 check: the send click right after injection was ignored but logged as `Prompt submitted`. The extension now confirms the send (stop button, emptied editor, `/c/` URL), retries the click up to 3 times only while the prompt is still in the editor, and reports failure otherwise.
 
 v0.1.104 (2026-10-19) follows the 2026-10-19 UI changes. ChatGPT: the extension no longer changes the model (the Latest row is gone); it only sets the reasoning effort and fails closed if the checked model changes. New composer, trigger and send selectors. Gemini: adds `4 Argon`, updates Flash-Lite/Flash names, and replaces Standard/Extended with `최저가`/`보통`/`최고가` (saved Standard maps to 최저가, Extended to 최고가). YouTube: the fast transcript path now uses `youtubei/v1/get_panel`. [Observations](docs/ui-dom-captures/live-ui-2026-10-19.md).
 

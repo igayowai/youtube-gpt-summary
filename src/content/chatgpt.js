@@ -1639,15 +1639,35 @@
     return ariaPressed === "false" || ariaChecked === "false" || dataState === "unchecked";
   }
 
+  // 2026-10-19 live check: a click right after injection was ignored while the send button
+  // already looked enabled, yet the old code reported success. A real send removes the send
+  // button, shows a stop button, empties the editor and moves the URL to /c/<id>.
   async function submitPrompt(input) {
-    const button = await waitForSendButton(input, 5000);
-    if (button) {
+    const startPath = location.pathname;
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      const button = await waitForSendButton(input, 5000);
+      if (!button) {
+        break;
+      }
+
       try {
         button.click();
-        return true;
       } catch (error) {
         globalThis.YGS.warn("Send button click failed", error);
+        break;
       }
+
+      const outcome = await waitForChatGptSubmission(input, startPath, 3000);
+      if (outcome === "sent") {
+        globalThis.YGS.log("ChatGPT submission confirmed", { attempt });
+        return true;
+      }
+      if (outcome !== "not-sent") {
+        // Prompt left the editor but no clear send signal: never click again to avoid a double send.
+        globalThis.YGS.warn("ChatGPT submission state unclear; not retrying", { attempt, outcome });
+        return false;
+      }
+      globalThis.YGS.log("ChatGPT send click not accepted yet; retrying", { attempt });
     }
 
     if (CHATGPT_SEND_PLAN_A_ONLY) {
@@ -1655,7 +1675,51 @@
       return false;
     }
 
-    return dispatchEnterFallback(input);
+    if (!getLiveChatGptComposerText(input) || !dispatchEnterFallback(input)) {
+      return false;
+    }
+    const outcome = await waitForChatGptSubmission(input, startPath, 3000);
+    if (outcome === "sent") {
+      globalThis.YGS.log("ChatGPT submission confirmed via Enter fallback");
+      return true;
+    }
+    globalThis.YGS.warn("ChatGPT submission not confirmed; prompt should remain in composer", { outcome });
+    return false;
+  }
+
+  function getLiveChatGptComposerText(input) {
+    const live = input?.isConnected ? input : findComposerInput();
+    if (!live) {
+      return "";
+    }
+    const value = "value" in live && typeof live.value === "string" ? live.value : (live.innerText || live.textContent || "");
+    return String(value).trim();
+  }
+
+  function hasChatGptStopButton() {
+    return Array.from(document.querySelectorAll("button[data-testid='stop-button'], button[aria-label]"))
+      .some((button) => {
+        if (button.getAttribute("data-testid") === "stop-button") return true;
+        const label = String(button.getAttribute("aria-label") || "").trim();
+        return /^(중지|스트리밍 중지|Stop|Stop streaming|Stop generating)$/i.test(label);
+      });
+  }
+
+  // Returns "sent", "not-sent" (prompt still in the editor, safe to click again) or "unclear".
+  async function waitForChatGptSubmission(input, startPath, timeoutMs) {
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < timeoutMs) {
+      const text = getLiveChatGptComposerText(input);
+      if (hasChatGptStopButton() || (!text && location.pathname !== startPath)) {
+        return "sent";
+      }
+      await delay(POLL_MS);
+    }
+    const text = getLiveChatGptComposerText(input);
+    if (text && !hasChatGptStopButton() && location.pathname === startPath) {
+      return "not-sent";
+    }
+    return text ? "unclear" : (location.pathname !== startPath ? "sent" : "unclear");
   }
 
   async function waitForSendButton(input, timeoutMs) {
