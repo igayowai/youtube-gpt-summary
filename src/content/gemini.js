@@ -973,9 +973,13 @@ globalThis.YGS = globalThis.YGS || {};
       return false;
     }
 
-    if (!isGeminiThinkingLevelExpanded(thinkingRow)) {
-      clickElementLikeUser(thinkingRow);
-      await delay(250);
+    // The 사고 수준 row toggles on every click (2026-10-21), so clickElementLikeUser's
+    // synthetic click + native click opens and closes it again. Click once, then check
+    // (inline layout sets aria-expanded; the side submenu may only show its rows).
+    const levelRowsShown = () => isGeminiThinkingLevelExpanded(thinkingRow) || Boolean(findGeminiThinkingLevelOption(level));
+    for (let attempt = 0; attempt < 2 && !levelRowsShown(); attempt += 1) {
+      nativeClickElement(thinkingRow);
+      await delay(300);
     }
 
     const option = await waitForGeminiThinkingLevelOption(level, 3000);
@@ -1127,19 +1131,34 @@ globalThis.YGS = globalThis.YGS || {};
     return false;
   }
 
-  // 2026-10-19 pill: primary text is the model (Flash-Lite, Flash, Pro, Argon) and the
-  // secondary text is the thinking level (보통, 최고가). The lowest level shows no secondary text.
+  // 2026-10-19/20 pill: primary text is the model (Flash-Lite, Flash, Pro, Argon) and the
+  // secondary text is the thinking level (보통, 높음; 최고가 on 10-19). The lowest level shows no secondary text.
   function isGeminiThinkingLevelSelectedBySelector(selector, level) {
     if (!level || level.value === "none") {
       return true;
     }
 
-    const { primary, secondary } = getGeminiSelectorLabelParts(selector);
+    const { primary, secondary, levelHidden } = getGeminiSelectorLabelParts(selector);
+    if (levelHidden) {
+      return false;
+    }
+
     if (secondary) {
       return isGeminiModelLabelMatch(secondary, level.selectedMatchers);
     }
 
     return Boolean(primary) && level.value === "low";
+  }
+
+  // 2026-10-20: a Gemini tab that was opened but never shown first renders a different pill
+  // ("Gemini" + model, no thinking level, no data-test-id on the button). After any menu choice it
+  // switches to the normal "Argon 높음" pill. Read the model from the second part and treat the
+  // level as unknown so it is chosen in the menu and confirmed on the re-rendered pill.
+  function readGeminiBrandPill(primary, secondary) {
+    if (normalizeForComparison(primary) === "gemini" && secondary) {
+      return { primary: secondary, secondary: "", levelHidden: true };
+    }
+    return { primary, secondary, levelHidden: false };
   }
 
   function getGeminiSelectorLabelParts(selector) {
@@ -1155,7 +1174,7 @@ globalThis.YGS = globalThis.YGS || {};
       const lines = String(container?.innerText || "").split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
       secondary = lines.find((line) => line !== primary) || "";
     }
-    return { primary, secondary };
+    return readGeminiBrandPill(primary, secondary);
   }
 
   function getGeminiThinkingLevelRowValue(row) {
@@ -1450,6 +1469,7 @@ globalThis.YGS = globalThis.YGS || {};
       || label.includes("4 argon")
       || label.includes("최저가")
       || label.includes("최고가")
+      || label.includes("빠르고 효율적")
       || label.includes("사고 수준")
       || label.includes("thinking_level")
       || label.includes("standard")

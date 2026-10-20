@@ -53,3 +53,35 @@ test("2026-10-19 pill: secondary text gives the level and a missing one means �
   }
   assert.equal(a.isGeminiThinkingLevelSelectedBySelector(pill("Pro", "보통"), a.level("none")), true);
 });
+
+test("2026-10-20 pill: the levels now read 낮음 / 보통 / 높음 ('Argon 높음'); lowest still has no secondary text", () => {
+  const a = api();
+  const cases = [[undefined, "low"], ["보통", "medium"], ["높음", "high"]];
+  for (const [secondary, expected] of cases) {
+    for (const value of ["low", "medium", "high"]) {
+      assert.equal(a.isGeminiThinkingLevelSelectedBySelector(pill("Argon", secondary), a.level(value)), value === expected,
+        `${secondary} vs ${value}`);
+    }
+  }
+});
+
+test("2026-10-20 submenu rows: each level's menu matcher hits its own row title only", () => {
+  const { context } = createRuntime();
+  const titles = ["낮음", "보통", "높음"];
+  const matches = (title, matchers) => matchers.some((m) => m.startsWith("exact:") ? title === m.slice(6) : title.includes(m));
+  for (const level of context.YGS.GEMINI_THINKING_LEVELS.filter((item) => item.value !== "none")) {
+    assert.deepEqual(titles.filter((title) => matches(title, level.matchers)), [level.label.split(" ")[0]], level.value);
+  }
+});
+
+test("2026-10-20 never-shown tab pill 'Gemini / Argon': model read from the second part, level left unconfirmed", () => {
+  const a = api();
+  const brand = pill("Gemini", "Argon");
+  for (const value of ["flash-lite", "flash", "pro", "argon"]) {
+    assert.equal(a.isGeminiModelSelectedBySelector(brand, a.model(value)), value === "argon", value);
+  }
+  for (const value of ["low", "medium", "high"]) {
+    assert.equal(a.isGeminiThinkingLevelSelectedBySelector(brand, a.level(value)), false, value);
+  }
+  assert.equal(a.isGeminiThinkingLevelSelectedBySelector(brand, a.level("none")), true);
+});

@@ -1,8 +1,10 @@
-# 개발 기록 (YouTube GPT Summary v0.1.112)
+# 개발 기록 (YouTube GPT Summary v0.1.113)
 
 사용자용 안내는 [README](../README.md). 이 문서는 버전별 변경, 내부 동작, 디버깅 기록이다.
 
 GitHub: <https://github.com/igayowai/youtube-gpt-summary>. GitHub Pages serves the repository root of `main`, so the root `privacy.html` is the Chrome Web Store privacy policy URL (<https://igayowai.github.io/youtube-gpt-summary/privacy.html>). Keep it identical to `docs/privacy.html` and do not move or delete it. `.nojekyll` keeps Pages from running Jekyll over the docs.
+
+v0.1.113 (2026-10-20): install defaults are now GPT reasoning effort Extra High, Gemini thinking level 높음 (model still 선택 없음) and Claude Opus / 높음. Saved settings are not changed; the new defaults apply to fresh installs and to fields never saved. Gemini renamed the 사고 수준 rows from 최저가 / 보통 / 최고가 to 낮음 / 보통 / 높음; matchers take the new words first and keep the old ones as fallbacks. A Gemini tab that is never shown first renders a "Gemini / Argon" pill without the level; v0.1.112 read "Gemini" as the model and withheld auto-submit. The model is now read from the second part and the level is chosen in the menu and confirmed on the re-rendered "Argon 높음" pill. The 사고 수준 row toggles open/closed on every click, and the old row click sent a synthetic click plus a native click, so it opened and closed again (live 2026-10-21: "thinking level option not found"); the row is now clicked once and checked, at most twice. Live check 2026-10-21 (never-shown tab, saved settings Argon / 높음): "Gemini thinking level selected 높음" → "Gemini prompt submitted", pill "Argon 높음", answer started. [Capture](ui-dom-captures/gemini/thinking-level-2026-10-20.md).
 
 v0.1.112 (2026-10-20): Claude model options show the current version in brackets ("Opus (현재 Opus 5.5)"). Selection still matches the family name only (`prefix:opus`), so a new release such as Opus 6 is chosen without a code change; the bracketed version is display-only and is updated by hand. Test: `claude-anchors.test.cjs` renames the captured rows to Opus 6 / Sonnet 6.
 

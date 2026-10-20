@@ -8,8 +8,8 @@ const { root, readSource, plain, createRuntime } = require("./helpers/runtime.cj
 
 const defaults = {
   customPrompt: null, promptMode: "default", outputLanguage: "Korean",
-  chatgptModelFamily: "latest", chatgptReasoningEffort: "none", geminiModel: "none", geminiThinkingLevel: "none",
-  claudeModel: "none", claudeEffort: "none",
+  chatgptModelFamily: "latest", chatgptReasoningEffort: "extra-high", geminiModel: "none", geminiThinkingLevel: "high",
+  claudeModel: "opus", claudeEffort: "high",
   aggressiveTranscriptPrefetch: true, autoSubmit: true, useTemporaryChat: true, useClaudeIncognito: true
 };
 
@@ -99,7 +99,7 @@ test("every supported settings choice round-trips without adding storage keys", 
 });
 
 test("explicit new effort takes precedence without rewriting legacy or unrelated storage", async () => {
-  for (const [chatgptReasoningEffort, expected] of [["none", "none"], ["high", "high"], [null, "none"], ["invalid", "none"]]) {
+  for (const [chatgptReasoningEffort, expected] of [["none", "none"], ["high", "high"], [null, defaults.chatgptReasoningEffort], ["invalid", defaults.chatgptReasoningEffort]]) {
     const initial = { chatgptModel: "pro-extended", chatgptReasoningEffort, unrelated: "preserved" };
     const h = createRuntime({ settings: initial });
     const settings = await h.context.YGS.getSettings();

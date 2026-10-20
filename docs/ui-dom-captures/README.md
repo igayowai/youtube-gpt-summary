@@ -1,5 +1,7 @@
 # UI DOM Captures
 
+Gemini: [2026-10-20 사고 수준 menu now 낮음 / 보통 / 높음](gemini/thinking-level-2026-10-20.md) (reduced sketch).
+
 Claude: [2026-10-20 claude.ai new chat, model menu and incognito](claude/new-chat/2026-10-20.md) (reduced sketch; JSON copy is the test fixture).
 
 Latest local evidence: [2026-10-19 ChatGPT, Gemini and YouTube observations](live-ui-2026-10-19.md) (reduced sketches; v0.1.103 mismatches listed). Previous: [2026-09-25 ChatGPT picker](chatgpt/new-chat/model-picker-2026-09-25.md).

@@ -1,17 +1,17 @@
 globalThis.YGS = globalThis.YGS || {};
 
-globalThis.YGS.VERSION = "0.1.112";
+globalThis.YGS.VERSION = "0.1.113";
 
 globalThis.YGS.DEFAULT_SETTINGS = {
   customPrompt: null,
   promptMode: "default",
   outputLanguage: "Korean",
   chatgptModelFamily: "latest",
-  chatgptReasoningEffort: "none",
+  chatgptReasoningEffort: "extra-high",
   geminiModel: "none",
-  geminiThinkingLevel: "none",
-  claudeModel: "none",
-  claudeEffort: "none",
+  geminiThinkingLevel: "high",
+  claudeModel: "opus",
+  claudeEffort: "high",
   aggressiveTranscriptPrefetch: true,
   autoSubmit: true,
   useTemporaryChat: true,
@@ -290,15 +290,16 @@ globalThis.YGS.GEMINI_MODELS = [
   }
 ];
 
-// 2026-10-19 Gemini "사고 수준" submenu, shared by every model: 최저가 / 보통 / 최고가.
-// The pill shows the level as secondary text except for the lowest level.
+// 2026-10-20 Gemini "사고 수준" submenu, shared by every model: 낮음 / 보통 / 높음
+// (2026-10-19 it read 최저가 / 보통 / 최고가; those words stay as fallbacks).
+// The pill shows the level as secondary text ("Argon 높음") except for the lowest level.
 globalThis.YGS.GEMINI_THINKING_LEVELS = [
   { value: "none", label: "선택 없음", matchers: [], selectedMatchers: [] },
   {
     value: "low",
-    label: "최저가 (빠르고 효율적)",
-    matchers: ["exact:최저가", "exact:최저", "exact:lowest", "exact:low"],
-    selectedMatchers: ["exact:최저가", "exact:최저", "exact:lowest", "exact:low"]
+    label: "낮음 (빠르고 효율적)",
+    matchers: ["exact:낮음", "exact:최저가", "exact:최저", "exact:lowest", "exact:low"],
+    selectedMatchers: ["exact:낮음", "exact:최저가", "exact:최저", "exact:lowest", "exact:low"]
   },
   {
     value: "medium",
@@ -308,9 +309,9 @@ globalThis.YGS.GEMINI_THINKING_LEVELS = [
   },
   {
     value: "high",
-    label: "최고가 (매우 철저함)",
-    matchers: ["exact:최고가", "exact:최고", "exact:highest", "exact:high"],
-    selectedMatchers: ["exact:최고가", "exact:최고", "exact:highest", "exact:high"]
+    label: "높음 (매우 철저함)",
+    matchers: ["exact:높음", "exact:최고가", "exact:최고", "exact:highest", "exact:high"],
+    selectedMatchers: ["exact:높음", "exact:최고가", "exact:최고", "exact:highest", "exact:high"]
   }
 ];
 
