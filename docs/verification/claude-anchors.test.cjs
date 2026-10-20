@@ -137,3 +137,14 @@ test("compact layout: the 노력 inline group is found by its label and model ro
   // Sonnet 5.5 in the main list comes before "Sonnet 5" under 더 많은 모델.
   assert.equal(a.readRowName(a.pickRow(a.findAllAnchors("menuRadio", menu), a.model("sonnet").matchers)), "Sonnet 5.5 간단한 작업에 가장 효율적");
 });
+
+test("model choice follows the family name, so a renamed version (Opus 6) is still picked", () => {
+  const a = api();
+  const future = { rows: capture.modelMenu.rows.map((row) => ({ ...row, text: row.text.replace("Opus 5.5", "Opus 6").replace("Sonnet 5.5", "Sonnet 6") })) };
+  const radios = menuRows(future).filter((row) => row.getAttribute("role") === "menuitemradio");
+  assert.ok(a.readRowName(a.pickRow(radios, a.model("opus").matchers)).startsWith("Opus 6"));
+  assert.ok(a.readRowName(a.pickRow(radios, a.model("sonnet").matchers)).startsWith("Sonnet 6"));
+  const selector = { getAttribute: (name) => (name === "aria-label" ? "모델: Opus 6 높음" : null) };
+  assert.equal(a.selectorShowsModel(selector, a.model("opus")), true);
+  assert.equal(a.selectorShowsEffort(selector, a.effort("high")), true);
+});

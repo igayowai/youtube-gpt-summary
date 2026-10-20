@@ -1,6 +1,6 @@
 globalThis.YGS = globalThis.YGS || {};
 
-globalThis.YGS.VERSION = "0.1.111";
+globalThis.YGS.VERSION = "0.1.112";
 
 globalThis.YGS.DEFAULT_SETTINGS = {
   customPrompt: null,
@@ -316,13 +316,15 @@ globalThis.YGS.GEMINI_THINKING_LEVELS = [
 
 // 2026-10-20 claude.ai model menu (menuitemradio rows): Fable 5.1 / Opus 5.5 / Sonnet 5.5 /
 // Haiku 5.5, each row followed by a short description. Older models sit under "더 많은 모델"
-// and are not offered. Matchers compare against the row's first line (the model name).
+// and are not offered. Matching uses the family name only ("prefix:opus"), never the version,
+// so a new release (e.g. Opus 6) is picked without a code change because the main list comes
+// first. The version in the label is display-only: update it when claude.ai changes.
 globalThis.YGS.CLAUDE_MODELS = [
   { value: "none", label: "선택 없음", matchers: [] },
-  { value: "fable", label: "Fable", matchers: ["prefix:fable"] },
-  { value: "opus", label: "Opus", matchers: ["prefix:opus"] },
-  { value: "sonnet", label: "Sonnet", matchers: ["prefix:sonnet"] },
-  { value: "haiku", label: "Haiku", matchers: ["prefix:haiku"] }
+  { value: "fable", label: "Fable (현재 Fable 5.1)", matchers: ["prefix:fable"] },
+  { value: "opus", label: "Opus (현재 Opus 5.5)", matchers: ["prefix:opus"] },
+  { value: "sonnet", label: "Sonnet (현재 Sonnet 5.5)", matchers: ["prefix:sonnet"] },
+  { value: "haiku", label: "Haiku (현재 Haiku 5.5)", matchers: ["prefix:haiku"] }
 ];
 
 // 2026-10-20 claude.ai "노력" submenu: 낮음 / 중간(추천) / 높음 / 엑스트라 / 최대(4x 이상 사용량).

@@ -1,8 +1,10 @@
-# 개발 기록 (YouTube GPT Summary v0.1.111)
+# 개발 기록 (YouTube GPT Summary v0.1.112)
 
 사용자용 안내는 [README](../README.md). 이 문서는 버전별 변경, 내부 동작, 디버깅 기록이다.
 
 GitHub: <https://github.com/igayowai/youtube-gpt-summary>. GitHub Pages serves the repository root of `main`, so the root `privacy.html` is the Chrome Web Store privacy policy URL (<https://igayowai.github.io/youtube-gpt-summary/privacy.html>). Keep it identical to `docs/privacy.html` and do not move or delete it. `.nojekyll` keeps Pages from running Jekyll over the docs.
+
+v0.1.112 (2026-10-20): Claude model options show the current version in brackets ("Opus (현재 Opus 5.5)"). Selection still matches the family name only (`prefix:opus`), so a new release such as Opus 6 is chosen without a code change; the bracketed version is display-only and is updated by hand. Test: `claude-anchors.test.cjs` renames the captured rows to Opus 6 / Sonnet 6.
 
 v0.1.111 (2026-10-20): Claude (claude.ai web chat) added as a third provider. Buttons are now labelled `GPT` / `Gemini` / `Claude` in service colors (black, blue-to-purple gradient, #D97757); before the transcript is ready they are dimmed instead of the old green ready state. `src/content/claude.js` opens `claude.ai/new` (`?incognito` unless turned off), refuses to paste when incognito is not confirmed, optionally picks model and effort (both the submenu layout and the compact inline-group layout of the model menu), inserts with `execCommand("insertText")`, submits and confirms by an emptied composer or a URL change. Every claude.ai element is listed once in the `ANCHORS` table at the top of the file with ordered fallbacks; a miss logs one `[YGS]` line naming the candidates and stops. Evidence: `docs/ui-dom-captures/claude/new-chat/2026-10-20.md` (+ `.json` fixture used by `docs/verification/claude-anchors.test.cjs`). Live check 2026-10-20: default send (3.5k chars) and a 14-minute transcript (10k chars) sent in incognito; model/effort selection confirmed in both menu layouts, and end to end from the options page (Claude model Sonnet, effort 낮음 → selector showed "Sonnet 5.5 낮음" → sent); GPT and Gemini regression sends confirmed.
 
