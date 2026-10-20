@@ -2,7 +2,9 @@
 
 유튜브 영상의 자막(스크립트)을 ChatGPT나 Gemini에 넘겨서 버튼 한 번으로 요약을 받는 크롬 확장 프로그램입니다.
 
-- 영상 페이지 오른쪽 아래에 **Summarize with GPT** / **Summarize with Gemini** 버튼이 생깁니다.
+<p align="center"><img src="docs/images/buttons.png" alt="Summarize with GPT, Summarize with Gemini 버튼" width="640"></p>
+
+- 영상 페이지 오른쪽 아래에 이 두 버튼이 생깁니다.
 - 누르면 새 탭에서 ChatGPT(또는 Gemini) 임시 채팅이 열리고, 자막 전체와 요약 프롬프트가 자동으로 입력·전송됩니다.
 - 무료, 광고 없음, 별도 서버 없음. 자막은 브라우저 안에서 처리되어 사용자가 고른 ChatGPT/Gemini로만 갑니다.
 
@@ -22,7 +24,10 @@ ChatGPT 또는 Gemini에 미리 로그인돼 있어야 합니다.
 ## 사용법
 
 1. 유튜브 영상 페이지를 엽니다.
-2. 오른쪽 아래 **Summarize with GPT** 또는 **Summarize with Gemini**를 누릅니다.
+2. 오른쪽 아래 **Summarize with GPT** 또는 **Summarize with Gemini**를 누릅니다. 버튼이 초록색이면 자막을 미리 받아 둔 상태라 바로 열립니다(검정·파랑이면 아직 받는 중).
+
+   <img src="docs/images/where-on-page.png" alt="유튜브 영상 화면 오른쪽 아래의 버튼 위치" width="600">
+
 3. 새 탭에서 요약이 시작됩니다. 자동 전송이 안 됐으면 입력창에 들어간 내용을 그대로 보내면 됩니다(프롬프트는 클립보드에도 복사됩니다).
 
 자막이 없는 영상은 탭을 열지 않고 버튼에 `Transcript unavailable`이 잠깐 뜹니다.
