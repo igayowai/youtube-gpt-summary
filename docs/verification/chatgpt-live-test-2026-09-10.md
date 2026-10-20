@@ -54,7 +54,7 @@ Actual one-step sequence: 2 -> 1 -> 0 -> 1 -> 2 -> 3 -> 4 -> 3 -> 2. Each transi
 
 The advanced `모델 선택` view showed `최신` selected, plus `GPT-5.6 Sol` and `GPT-5.5`. No model radio was changed. This sweep is specific to that selected model family and current mixed Korean/English UI.
 
-Exact outerHTML is stored once in the [central new-chat capture](C:/Users/USER/Documents/Claude/youtube_summary_GPT/docs/ui-dom-captures/chatgpt/new-chat/chatgpt-reasoning-slider-2026-09-10.md). This report intentionally contains no duplicate markup or full transcript.
+Exact outerHTML is stored once in the [central new-chat capture](../ui-dom-captures/chatgpt/new-chat/chatgpt-reasoning-slider-2026-09-10.md). This report intentionally contains no duplicate markup or full transcript.
 
 ## Diagnosis And Limits
 

@@ -3,7 +3,7 @@
 - Date: 2026-09-10 KST, live submission approximately 04:00.
 - Scope: existing new-chat reasoning setting. No new model setting, Gemini patch, version bump or ZIP. Version remains 0.1.101.
 - Source: `src/content/chatgpt.js`; regressions: `chatgpt-slider.test.cjs`.
-- Rollback baseline: `C:/Users/USER/AppData/Local/Temp/ygs-chatgpt-pre-slider-20260910-patch1.js`, preserving previously dirty source. Do not revert unrelated changes.
+- Rollback baseline: `%TEMP%/ygs-chatgpt-pre-slider-20260910-patch1.js`, preserving previously dirty source. Do not revert unrelated changes.
 
 ## Implementation
 

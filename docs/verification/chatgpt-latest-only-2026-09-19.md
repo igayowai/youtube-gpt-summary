@@ -20,7 +20,7 @@ User approved this bounded phase. Follow-up corrected the omitted version bump t
 
 ## Recovery And Scope
 
-- Pre-edit source, tests and primary docs copied to `C:/Users/USER/AppData/Local/Temp/ygs-latest-only-20260919-001`.
+- Pre-edit source, tests and primary docs copied to `%TEMP%/ygs-latest-only-20260919-001`.
 - Restore only the files changed by this phase from that snapshot if rollback is needed, preserving later unrelated edits; then reload extension and refresh relevant tabs. Do not reset the dirty repository.
 - After Reload, GPT summaries should select Latest and the configured effort; if confirmation fails, sending remains withheld. Diagnose the selection log or restore this phase, rather than bypassing confirmation.
 - Transcript loading, button readiness colors, Gemini compatibility and the known TODO defects are outside this phase.

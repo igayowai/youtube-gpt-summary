@@ -7,7 +7,7 @@
 
 ## Evidence
 
-The canonical [comparison matrix and exact outerHTML](C:/Users/USER/Documents/Claude/youtube_summary_GPT/docs/ui-dom-captures/chatgpt/new-chat/model-picker-2026-09-10/README.md) contains 42 fragments: 15 open effort menus, 15 closed composer pills, and 12 navigation/reset/restoration captures.
+The canonical [comparison matrix and exact outerHTML](../ui-dom-captures/chatgpt/new-chat/model-picker-2026-09-10/README.md) contains 42 fragments: 15 open effort menus, 15 closed composer pills, and 12 navigation/reset/restoration captures.
 
 - Latest values 0..3 display effort only; latest Pro displays 6 Pro.
 - GPT-5.6 Sol and GPT-5.5 display their version prefix at every effort.

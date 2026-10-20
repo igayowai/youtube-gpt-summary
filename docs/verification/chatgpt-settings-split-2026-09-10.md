@@ -1,6 +1,6 @@
 # ChatGPT Settings Split: Implementation Checkpoint
 
-Updated: 2026-09-10 KST. Owner/session: current youtube_summary_GPT task, settings-split-20260910. Coordination: no conflicting session observed. Workspace and resume target: `C:/Users/USER/Documents/Claude/youtube_summary_GPT`.
+Updated: 2026-09-10 KST. Owner/session: current youtube_summary_GPT task, settings-split-20260910. Coordination: no conflicting session observed. Workspace and resume target: `the project root`.
 
 Status: after user Reload, one real Latest/extra-high summary completed successfully (18:44-18:46 KST). Pointer opening succeeded, so the synthetic shortcut fallback remains live-unverified. Version remains 0.1.101. No ZIP, permission/dependency addition, Gemini content-script change or authentication-state access.
 
@@ -12,7 +12,7 @@ Status: after user Reload, one real Latest/extra-high summary completed successf
 - New preferences pass through YouTube -> background queue/direct open -> pending request -> ChatGPT. Older pending requests normalize at read time without rewriting their original payload.
 - Runtime: actively select and verify model, then effort, then reopen and verify both. No selection preserves initial effort while still enforcing the requested model. Missing/disabled/ambiguous models or unconfirmed selection stop injection and submission.
 - Model selection uses one pointer activation, checked-radio readback, then one Enter fallback only if unconfirmed. Menu dismissal triggers readback after reopening, not a blind repeat click. Logs distinguish pointer/keyboard activation.
-- Shared exact outerHTML remains canonical in the [collab new-chat model-picker captures](C:/Users/USER/Documents/Claude/youtube_summary_GPT/docs/ui-dom-captures/chatgpt/new-chat/model-picker-2026-09-10/README.md). No new shared capture was taken or duplicated. GPTs assumptions are not used.
+- Shared exact outerHTML remains canonical in the [collab new-chat model-picker captures](../ui-dom-captures/chatgpt/new-chat/model-picker-2026-09-10/README.md). No new shared capture was taken or duplicated. GPTs assumptions are not used.
 
 ## Verification
 
@@ -60,6 +60,6 @@ The requested bounded live revalidation is complete. Actual Options save/reopen 
 
 ## Recovery
 
-Pre-edit source/test copies: `C:/Users/USER/AppData/Local/Temp/ygs-settings-split-20260910-001`. Ten flat files preserve this phase's starting dirty state: constants.js, storage.js, chatgpt.js, youtube.js, service_worker.js, options.html, options.js, runtime.test.cjs, options.test.cjs, chatgpt-slider.test.cjs. Match each to its same-named source/test path; do not reset the worktree or overwrite newer unrelated edits.
+Pre-edit source/test copies: `%TEMP%/ygs-settings-split-20260910-001`. Ten flat files preserve this phase's starting dirty state: constants.js, storage.js, chatgpt.js, youtube.js, service_worker.js, options.html, options.js, runtime.test.cjs, options.test.cjs, chatgpt-slider.test.cjs. Match each to its same-named source/test path; do not reset the worktree or overwrite newer unrelated edits.
 
 The test-only memory-storage helper additionally now omits absent keys in array reads, matching Chrome behavior. New verification files and screenshots are non-runtime artifacts. To roll back this phase, compare/restore only its changes from the copies, reload the extension and refresh content tabs. Do not uninstall/reset extension storage: old code still reads its preserved `chatgptModel`, and ignores the additive new keys. No credential/config file transfer is needed.

@@ -48,7 +48,7 @@ YouTube GPT Summary는 YouTube 영상 페이지에서 접근 가능한 자막 �
 ### Data handled
 
 - Website content: YouTube video title, URL, video ID, and accessible transcript/caption text when available.
-- User-provided content/settings: custom prompt, prompt mode, output language, ChatGPT model setting, Gemini model setting, Temporary Chat setting, auto-submit setting, prefetch setting.
+- User-provided content/settings: custom prompt, prompt mode, output language, ChatGPT reasoning effort setting, Gemini model setting, Gemini thinking level setting, Temporary Chat setting, auto-submit setting, prefetch setting.
 - Temporary workflow data: request ID, generated final prompt, queue or pending-prompt state used to transfer prompts between YouTube, ChatGPT, and Gemini tabs.
 
 ### Data sharing disclosure

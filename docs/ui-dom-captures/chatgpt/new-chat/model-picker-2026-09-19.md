@@ -23,6 +23,6 @@ The accessible name separates the notice with a space; raw `textContent` is `GPT
 - All three announced: 0 Instant, 1 중간, 2 High, 3 매우 높음, 4 Pro; bounds 0..4. Total 15 model/effort states observed, not 15 extension submissions.
 - Slider's inner `role="slider"` element is `aria-hidden="true"` and tabindex -1. Semantic slider lookup timed out while DOM showed it present. The visible enclosing `menuitem` named `성능` accepted ArrowLeft/ArrowRight. Read the DOM value; do not interpret semantic lookup timeout as missing slider.
 - Simple/advanced panels retain their prior test IDs and active/inert distinction. Inactive model rows remain in DOM; use the active view for interaction.
-- Consumer actual helper reproduction detected GPT-5.5 without the notice but returned no family with the captured whole-row text. [Consumer report](C:/Users/USER/Documents/Claude/youtube_summary_GPT/verification/live-revalidation-2026-09-19.md).
+- Consumer actual helper reproduction detected GPT-5.5 without the notice but returned no family with the captured whole-row text. [Consumer report](../../../verification/live-revalidation-2026-09-19.md).
 
 No GPTs, English-only UI, backend model identity, model quality, or sustained stability claims.

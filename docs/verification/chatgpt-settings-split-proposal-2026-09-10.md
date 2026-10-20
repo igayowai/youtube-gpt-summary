@@ -35,11 +35,11 @@ Discovery coverage:
 - Saturation: later product/version and platform queries stayed within the same recurring patterns: native extension storage, userscript UI interaction, independent browser orchestration, or unrelated API clients. The additional control repository is another standalone browser-orchestration pattern, not a drop-in extension settings implementation. No materially different pattern meets this project's full flow without adaptation.
 
 Evidence ledger (paths are authoritative local sources; web sources were read, not installed):
-1. [storage.js](C:/Users/USER/Documents/Claude/youtube_summary_GPT/src/shared/storage.js:15) — project evidence: normalization, legacy Pro aliases, get/save wrappers.
-2. [constants.js](C:/Users/USER/Documents/Claude/youtube_summary_GPT/src/shared/constants.js:219) — project evidence: current effort-only list and obsolete Pro variants.
-3. [options.js](C:/Users/USER/Documents/Claude/youtube_summary_GPT/src/options/options.js:21) — project evidence: existing select renderer and save/load fields.
-4. [options.html](C:/Users/USER/Documents/Claude/youtube_summary_GPT/src/options/options.html:50) — project evidence: one GPT reasoning select.
-5. [Canonical matrix](C:/Users/USER/Documents/Claude/youtube_summary_GPT/docs/ui-dom-captures/chatgpt/new-chat/model-picker-2026-09-10/README.md) — project evidence: three observed radios, five positions and actual labels.
+1. [storage.js](../../src/shared/storage.js#L15) — project evidence: normalization, legacy Pro aliases, get/save wrappers.
+2. [constants.js](../../src/shared/constants.js#L219) — project evidence: current effort-only list and obsolete Pro variants.
+3. [options.js](../../src/options/options.js#L21) — project evidence: existing select renderer and save/load fields.
+4. [options.html](../../src/options/options.html#L50) — project evidence: one GPT reasoning select.
+5. [Canonical matrix](../ui-dom-captures/chatgpt/new-chat/model-picker-2026-09-10/README.md) — project evidence: three observed radios, five positions and actual labels.
 6. [Chrome storage](https://developer.chrome.com/docs/extensions/reference/api/storage) — official product/service docs: asynchronous local get/set; existing extension contexts supported.
 7. [OpenAI terms](https://openai.com/policies/terms-of-use/) — official product/service docs: automated extraction and restriction-bypass cautions.
 8. [extend-chrome/storage](https://github.com/extend-chrome/storage) — source repo/mature OSS: Promise/bucket wrapper and composed setters; no ChatGPT-specific selection or legacy mapping.

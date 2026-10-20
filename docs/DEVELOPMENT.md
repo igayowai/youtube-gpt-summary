@@ -1,6 +1,6 @@
 # 개발 기록 (YouTube GPT Summary v0.1.110)
 
-사용자용 안내는 [README](../README.md). 이 문서는 버전별 변경, 내부 동작, 디버깅 기록이다. Claude Code용 프로젝트 규칙은 [CLAUDE.md](../CLAUDE.md).
+사용자용 안내는 [README](../README.md). 이 문서는 버전별 변경, 내부 동작, 디버깅 기록이다.
 
 GitHub: <https://github.com/igayowai/youtube-gpt-summary>. GitHub Pages serves the repository root of `main`, so the root `privacy.html` is the Chrome Web Store privacy policy URL (<https://igayowai.github.io/youtube-gpt-summary/privacy.html>). Keep it identical to `docs/privacy.html` and do not move or delete it. `.nojekyll` keeps Pages from running Jekyll over the docs.
 
@@ -382,18 +382,19 @@ youtube-gpt-summary-extension/
     icon48.png
     icon128.png
   docs/
+    DEVELOPMENT.md      # 이 문서
+    images/             # README 그림
+    privacy.html        # 루트 privacy.html과 같은 내용
     ui-dom-captures/
-  verification/
-    README.md
-    runtime.test.cjs
-    options.test.cjs
-    known-issues.test.cjs
-    helpers/
-      runtime.cjs
-  dist/
-  CLAUDE.md
-  README.md
+    verification/       # 검증 기록, 테스트: node --test docs/verification/*.test.cjs
+      helpers/runtime.cjs
+    plan/
+    store-submission/
+  privacy.html          # GitHub Pages 개인정보처리방침 주소 (옮기지 않음)
+  index.html            # GitHub Pages 첫 페이지 → 저장소로 이동
+  README.md             # 사용자용 안내
   PRIVACY.md
+  LICENSE
 ```
 
 ## 개발 메모

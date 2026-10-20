@@ -2,7 +2,7 @@
 
 Shared historical capture:
 
-[ChatGPT English reasoning and Temporary Chat UI, 2026-06-14](C:/Users/USER/Documents/Claude/youtube_summary_GPT/docs/ui-dom-captures/chatgpt/new-chat/chatgpt-english-ui-2026-06-14.md)
+[ChatGPT English reasoning and Temporary Chat UI, 2026-06-14](chatgpt/new-chat/chatgpt-english-ui-2026-06-14.md)
 
 This project consumes that dated evidence for English reasoning-label compatibility and Temporary Chat detection.
 

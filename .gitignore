@@ -7,3 +7,7 @@ SESSION-KICKOFF.md
 dist/
 output/
 session-summary.md
+
+# 프로젝트 규칙(작업 환경 정보 포함)과 옛 진단 스크립트: 로컬 전용 (2026-10-20 사용자 결정)
+CLAUDE.md
+docs/verification/_*.js

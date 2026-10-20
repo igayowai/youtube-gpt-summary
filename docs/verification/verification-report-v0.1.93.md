@@ -20,7 +20,7 @@ Static validation:
 - Manifest file references resolve.
 
 Manual validation:
-- Reload the unpacked extension from `C:\Users\USER\Documents\Claude\youtube_summary_GPT`.
+- Reload the unpacked extension from `the project root`.
 - Refresh existing YouTube and Gemini tabs.
 - Run `Summarize with Gemini`.
 - Expected Gemini console logs should show a pointer method click first. If confirmation fails, one native method fallback may appear. Prompt injection should continue only after Temporary Chat confirmation.

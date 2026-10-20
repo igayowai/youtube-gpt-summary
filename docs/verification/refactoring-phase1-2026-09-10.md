@@ -47,7 +47,7 @@ Effective prompt SHA-256 values:
 
 Pre-edit copies are at:
 
-`C:/Users/USER/AppData/Local/Temp/ygs-refactor-phase1-20260910-001`
+`%TEMP%/ygs-refactor-phase1-20260910-001`
 
 | Backup file | Original project path |
 | --- | --- |

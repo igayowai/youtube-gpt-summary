@@ -2,9 +2,9 @@
 
 Shared historical capture:
 
-[ChatGPT reasoning menu, 2026-06-01](C:/Users/USER/Documents/Claude/youtube_summary_GPT/docs/ui-dom-captures/chatgpt/new-chat/chatgpt-reasoning-menu-2026-06-01.md)
+[ChatGPT reasoning menu, 2026-06-01](chatgpt/new-chat/chatgpt-reasoning-menu-2026-06-01.md)
 
-[Earlier exact Temporary Chat composer and menu outerHTML, 2026-05-23](C:/Users/USER/Documents/Claude/youtube_summary_GPT/docs/ui-dom-captures/chatgpt/new-chat/chatgpt-temporary-chat-dom-2026-05-23.md)
+[Earlier exact Temporary Chat composer and menu outerHTML, 2026-05-23](chatgpt/new-chat/chatgpt-temporary-chat-dom-2026-05-23.md)
 
 This project consumes that dated evidence for new-chat reasoning selection. The separate GPTs UI is not currently automated by this extension.
 

@@ -33,7 +33,7 @@ These tests do not establish current ChatGPT/Gemini selector compatibility, actu
 
 For a manual Options smoke check, reload the unpacked extension at the project root, open its Options page, note the original settings, and check the dropdowns and prompt-mode selection. Save only a deliberate reversible setting change, reopen Options to confirm it persisted, then restore the original value. This is a real local settings write; it is not performed by the tests above. Phase 1 did not run this manual check.
 
-No package is built by these tests. ZIP packaging remains a separate requested action under `dist/`, with the runtime-only boundary defined by [`../CLAUDE.md`](../../CLAUDE.md).
+No package is built by these tests. ZIP packaging remains a separate requested action under `dist/`, with the runtime-only boundary: manifest.json, LICENSE, assets/, src/ only.
 
 ## Latest Evidence
 

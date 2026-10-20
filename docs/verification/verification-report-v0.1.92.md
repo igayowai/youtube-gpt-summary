@@ -19,7 +19,7 @@ Static validation:
 - Manifest file references resolve.
 
 Manual validation:
-- Reload the unpacked extension from `C:\Users\USER\Documents\Claude\youtube_summary_GPT`.
+- Reload the unpacked extension from `the project root`.
 - Refresh existing YouTube and Gemini tabs.
 - Run `Summarize with Gemini`.
 - Expected Gemini console logs should show `Clicking Gemini Temporary Chat inner control` with label `임시 채팅`, followed by Temporary Chat confirmation and prompt injection.

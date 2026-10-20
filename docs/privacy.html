@@ -30,7 +30,7 @@
 </head>
 <body>
   <h1>YouTube GPT Summary Privacy Policy and Disclaimer</h1>
-  <p><strong>Last updated:</strong> 2026-05-13 KST</p>
+  <p><strong>Last updated:</strong> 2026-10-20 KST</p>
 
   <p>This document describes how the YouTube GPT Summary Chrome extension handles data, what third-party services may receive user-directed content, and what limitations apply to summaries generated through ChatGPT or Gemini.</p>
 
@@ -48,8 +48,9 @@
     <li>User-entered custom prompt</li>
     <li>Prompt mode setting</li>
     <li>Output language setting</li>
-    <li>ChatGPT model selection setting</li>
+    <li>ChatGPT reasoning effort setting</li>
     <li>Gemini model selection setting</li>
+    <li>Gemini thinking level setting</li>
     <li>Temporary Chat setting</li>
     <li>Auto-submit setting</li>
     <li>Aggressive transcript prefetch setting</li>
@@ -64,17 +65,19 @@
     <li><code>customPrompt</code></li>
     <li><code>promptMode</code></li>
     <li><code>outputLanguage</code></li>
-    <li><code>chatgptModel</code></li>
+    <li><code>chatgptReasoningEffort</code></li>
     <li><code>geminiModel</code></li>
+    <li><code>geminiThinkingLevel</code></li>
     <li><code>aggressiveTranscriptPrefetch</code></li>
     <li><code>useTemporaryChat</code></li>
     <li><code>autoSubmit</code></li>
   </ul>
   <p>If the custom prompt is empty or contains only whitespace, it may be stored internally as <code>null</code>.</p>
+  <p>A <code>chatgptModel</code> value saved by an earlier version may remain in extension storage. Current versions only read it to carry over the earlier reasoning-effort choice and do not change the ChatGPT model.</p>
 
   <h2>4. Temporary In-Browser Data</h2>
   <p>The extension may temporarily keep transcript data in the current YouTube tab's content-script memory to speed up the user's later click on the summarize button. This cache is local to the current browser tab and is not a permanent video history.</p>
-  <p>The extension may also use <code>chrome.storage.session</code> for temporary prompt-transfer data. Queue or pending-prompt data may include the final prompt, source metadata, request ID, selected ChatGPT or Gemini model setting, and related temporary workflow state. This data is used to process ChatGPT or Gemini prompt-transfer jobs and is not intended as permanent storage.</p>
+  <p>The extension may also use <code>chrome.storage.session</code> for temporary prompt-transfer data. Queue or pending-prompt data may include the final prompt, source metadata, request ID, selected ChatGPT reasoning effort, Gemini model and Gemini thinking level settings, and related temporary workflow state. This data is used to process ChatGPT or Gemini prompt-transfer jobs and is not intended as permanent storage.</p>
   <p>The extension does not permanently store video-by-video summary history, transcript history, ChatGPT or Gemini response content, ChatGPT or Gemini conversation history, user account information, payment information, or advertising identifiers.</p>
 
   <h2>5. Data Sharing and Third-Party Services</h2>

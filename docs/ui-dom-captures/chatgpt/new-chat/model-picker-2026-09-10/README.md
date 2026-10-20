@@ -51,12 +51,12 @@ Each model used slider values 0..4 and the same five announced efforts in this s
 - Capture type: observed UI behavior, not outerHTML or a synthetic DOM sketch. Surface: the same normal/Temporary Chat model-picker family, not GPTs.
 - On a later test tab showing Latest / 매우 높음, browser keyboard input Ctrl+Shift+M opened the performance/model menu. Escape closed it. No model/effort changes or prompt submission occurred during this check.
 - This updates the historical shortcut observation in [2026-05-23 Temporary Chat evidence](../chatgpt-temporary-chat-dom-2026-05-23.md). Browser key input does not establish that page handlers accept extension-generated KeyboardEvents.
-- Consumer follow-up: youtube_summary_GPT added a pointer-first, single Ctrl+Shift+M fallback per unconfirmed menu-opening operation. It still requires a verified picker button, matching owned menu and final model/effort readback. Local regressions pass; synthetic-event live verification awaits extension Reload. [Consumer checkpoint](C:/Users/USER/Documents/Claude/youtube_summary_GPT/verification/chatgpt-settings-split-2026-09-10.md).
+- Consumer follow-up: youtube_summary_GPT added a pointer-first, single Ctrl+Shift+M fallback per unconfirmed menu-opening operation. It still requires a verified picker button, matching owned menu and final model/effort readback. Local regressions pass; synthetic-event live verification awaits extension Reload. [Consumer checkpoint](../../../../verification/chatgpt-settings-split-2026-09-10.md).
 - The 42 exact outerHTML fragments below are unchanged.
 
 ## Exact HTML Files
 
-Consumer follow-up, 2026-09-10 04:00 KST: youtube_summary_GPT used these anchors in its content script and verified one actual YouTube summary request. Synthetic extension events changed High to Extra High; the closed pill displayed 매우 높음 and prompt submission succeeded without manual selection. This is one new-chat runtime path, not runtime coverage of all 15 combinations, GPTs, or legacy Pro variants. Consumer report: `C:/Users/USER/Documents/Claude/youtube_summary_GPT/verification/chatgpt-slider-live-patch-2026-09-10.md`. Exact fragments below remain unchanged.
+Consumer follow-up, 2026-09-10 04:00 KST: youtube_summary_GPT used these anchors in its content script and verified one actual YouTube summary request. Synthetic extension events changed High to Extra High; the closed pill displayed 매우 높음 and prompt submission succeeded without manual selection. This is one new-chat runtime path, not runtime coverage of all 15 combinations, GPTs, or legacy Pro variants. Consumer report: `../../../../verification/chatgpt-slider-live-patch-2026-09-10.md`. Exact fragments below remain unchanged.
 
 42 exact fragments are grouped by meaning:
 
