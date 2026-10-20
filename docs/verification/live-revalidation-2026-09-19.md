@@ -29,6 +29,6 @@ Scope: user requested testing of remaining coverage. Existing signed-in Chrome, 
 - Gemini initial Flash-Lite, non-extended, non-temporary state restored. Menu dismissed. No prompts submitted to either provider in this run.
 - Existing unrelated user tabs were not claimed or modified. Test-created tabs are disposable.
 - GPT exact radio fragment: [shared capture](C:/Users/USER/Documents/Claude/youtube_summary_GPT/docs/ui-dom-captures/chatgpt/new-chat/model-picker-2026-09-19.md).
-- Gemini and YouTube reduced UI observations: [local captures](../docs/ui-dom-captures/live-ui-2026-09-19.md). No account/sidebar content, tokens, request identifiers or transcripts saved.
+- Gemini and YouTube reduced UI observations: [local captures](../ui-dom-captures/live-ui-2026-09-19.md). No account/sidebar content, tokens, request identifiers or transcripts saved.
 
 Next: propose a narrowly scoped GPT-5.5 primary-label and Gemini current-menu compatibility patch, plus separate YouTube transcript diagnosis. Tests alone do not authorize those code changes. The 2026-09-10 successful summary remains historical, not a successful summary in this run.

@@ -23,7 +23,7 @@ async function main() {
     const page = await context.newPage();
     const errors = [];
     page.on("pageerror", error => errors.push(error.message));
-    const url = pathToFileURL(path.resolve(__dirname, "../src/options/options.html")).href;
+    const url = pathToFileURL(path.resolve(__dirname, "../../src/options/options.html")).href;
     await page.goto(url);
     await page.locator("#chatgptReasoningEffort option").first().waitFor({ state: "attached" });
     assert.equal(await page.locator("#chatgptModelFamily").count(), 0);
@@ -38,7 +38,7 @@ async function main() {
     assert.equal(data.chatgptModelFamily, "gpt-5.5");
     assert.equal(await page.locator("#chatgptReasoningEffort").inputValue(), "extra-high");
     assert.equal(data.chatgptModel, "pro-extended");
-    const output = path.resolve(__dirname, "../output/playwright");
+    const output = path.resolve(__dirname, "../../output/playwright");
     fs.mkdirSync(output, { recursive: true });
     for (const width of [1280, 390]) {
       await page.setViewportSize({ width, height: 960 });

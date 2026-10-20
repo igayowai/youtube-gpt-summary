@@ -2,3 +2,8 @@
 docs/codex-history/
 CODEX-HANDOFF-INDEX.md
 SESSION-KICKOFF.md
+
+# 로컬 산출물: 업로드 ZIP은 GitHub Releases로 배포, 테스트 스크린샷·옛 인계문은 공개하지 않음 (2026-10-20 사용자 결정)
+dist/
+output/
+session-summary.md

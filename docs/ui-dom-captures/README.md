@@ -16,16 +16,16 @@ The dated 2026-05 and 2026-06 ChatGPT files are historical selector evidence. A 
 
 Project references and local integration notes:
 
-- [Latest-only GPT consumer update, 2026-09-19](../../verification/chatgpt-latest-only-2026-09-19.md): existing new-chat captures reused; old model rows are never selection targets. Latest checked state and effort are still verified; other consumers may continue to use all model evidence.
+- [Latest-only GPT consumer update, 2026-09-19](../verification/chatgpt-latest-only-2026-09-19.md): existing new-chat captures reused; old model rows are never selection targets. Latest checked state and effort are still verified; other consumers may continue to use all model evidence.
 
-- [2026-09-19 live revalidation](../../verification/live-revalidation-2026-09-19.md): GPT 15-state browser sweep, new GPT-5.5 label mismatch, Gemini menu changes, YouTube transcript loading failure.
+- [2026-09-19 live revalidation](../verification/live-revalidation-2026-09-19.md): GPT 15-state browser sweep, new GPT-5.5 label mismatch, Gemini menu changes, YouTube transcript loading failure.
 - [2026-09-19 shared GPT capture](C:/Users/USER/Documents/Claude/youtube_summary_GPT/docs/ui-dom-captures/chatgpt/new-chat/model-picker-2026-09-19.md)
 - [2026-09-19 Gemini and YouTube reduced captures](live-ui-2026-09-19.md)
-- [GPT model/effort split consumer checkpoint, 2026-09-10](../../verification/chatgpt-settings-split-2026-09-10.md): separate model-radio and effort-slider phases; checked state, active panels and final readback required. Pointer-first menu opening has a single Ctrl+Shift+M fallback with owned-menu confirmation. One real Latest/extra-high summary completed after Reload; pointer opening succeeded, leaving synthetic shortcut coverage unverified. No duplicate/new outerHTML.
-- [GPT slider runtime patch and actual submission, 2026-09-10](../../verification/chatgpt-slider-live-patch-2026-09-10.md)
+- [GPT model/effort split consumer checkpoint, 2026-09-10](../verification/chatgpt-settings-split-2026-09-10.md): separate model-radio and effort-slider phases; checked state, active panels and final readback required. Pointer-first menu opening has a single Ctrl+Shift+M fallback with owned-menu confirmation. One real Latest/extra-high summary completed after Reload; pointer opening succeeded, leaving synthetic shortcut coverage unverified. No duplicate/new outerHTML.
+- [GPT slider runtime patch and actual submission, 2026-09-10](../verification/chatgpt-slider-live-patch-2026-09-10.md)
 - [ChatGPT model-version and reasoning display matrix, 2026-09-10](C:/Users/USER/Documents/Claude/youtube_summary_GPT/docs/ui-dom-captures/chatgpt/new-chat/model-picker-2026-09-10/README.md)
-- [Model-picker integration test notes, 2026-09-10](../../verification/chatgpt-model-picker-test-2026-09-10.md)
-- [ChatGPT live test and slider incompatibility, 2026-09-10](../../verification/chatgpt-live-test-2026-09-10.md)
+- [Model-picker integration test notes, 2026-09-10](../verification/chatgpt-model-picker-test-2026-09-10.md)
+- [ChatGPT live test and slider incompatibility, 2026-09-10](../verification/chatgpt-live-test-2026-09-10.md)
 - [ChatGPT English reasoning and Temporary Chat integration note, 2026-06-14](chatgpt-english-ui-2026-06-14.md)
 - [ChatGPT reasoning menu integration note, 2026-06-01](chatgpt-reasoning-menu-2026-06-01.md)
 - [Gemini Temporary Chat button, 2026-06-01](gemini-temporary-chat-button-2026-06-01.md)

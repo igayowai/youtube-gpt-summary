@@ -2,7 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 
-const root = path.resolve(__dirname, "../..");
+const root = path.resolve(__dirname, "../../..");
 const readSource = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const plain = (value) => structuredClone(value);
 
