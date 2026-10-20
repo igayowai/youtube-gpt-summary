@@ -2,6 +2,8 @@
 
 Project-local rules for Claude Code live in [CLAUDE.md](CLAUDE.md). Keep `README.md` focused on product behavior, setup, changelog, and debugging notes.
 
+GitHub: <https://github.com/igayowai/youtube-gpt-summary>. GitHub Pages serves the repository root of `main`, so the root `privacy.html` is the Chrome Web Store privacy policy URL (<https://igayowai.github.io/youtube-gpt-summary/privacy.html>). Keep it identical to `docs/privacy.html` and do not move or delete it. `.nojekyll` keeps Pages from running Jekyll over the docs.
+
 v0.1.110 (2026-10-19): in a shown ChatGPT tab the composer re-render after injection came back EMPTY with the send button disabled, so the prompt was lost. If the live editor is a replacement and empty (or empty before any click), the prompt is injected again (at most twice) before sending.
 
 v0.1.109 (2026-10-19): a ChatGPT/Gemini tab that is opened and never shown (the user switches away at once) has a 0x0 viewport, so every element measured zero size and the visibility check rejected the editor and the send button. Visibility now falls back to style and layout presence in that case.
