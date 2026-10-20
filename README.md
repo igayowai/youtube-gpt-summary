@@ -2,22 +2,27 @@
 
 유튜브 영상의 자막(스크립트)을 ChatGPT나 Gemini에 넘겨서 버튼 한 번으로 요약을 받는 크롬 확장 프로그램입니다.
 
+<p align="center"><a href="https://github.com/igayowai/youtube-gpt-summary/releases/latest/download/youtube-gpt-summary.zip"><img src="docs/images/download.png" alt="다운로드 (크롬 확장 ZIP)" width="300"></a><br>
+누르면 최신 버전 ZIP 파일이 바로 받아집니다. 받은 뒤 아래 <b>설치</b>를 따라 하세요.</p>
+
 <p align="center"><img src="docs/images/buttons.png" alt="Summarize with GPT, Summarize with Gemini 버튼" width="640"></p>
 
-- 영상 페이지 오른쪽 아래에 이 두 버튼이 생깁니다.
+- 설치하면 유튜브 영상 페이지 오른쪽 아래에 이 두 버튼이 생깁니다.
 - 누르면 새 탭에서 ChatGPT(또는 Gemini) 임시 채팅이 열리고, 자막 전체와 요약 프롬프트가 자동으로 입력·전송됩니다.
 - 무료, 광고 없음, 별도 서버 없음. 자막은 브라우저 안에서 처리되어 사용자가 고른 ChatGPT/Gemini로만 갑니다.
 
-> 크롬 웹스토어에는 올라가 있지 않아서, ZIP을 받아 직접 설치하는 방식입니다(아래 3분 설치).
+## 설치 (처음 한 번, 3분)
 
-## 설치
+크롬 웹스토어에는 올라가 있지 않아서, 받은 파일을 크롬에 직접 넣는 방식입니다.
 
-1. [최신 릴리스](https://github.com/igayowai/youtube-gpt-summary/releases/latest)에서 `youtube-gpt-summary-v….zip`을 받습니다.
-2. 압축을 풉니다. **이 폴더는 지우지 말고 계속 둘 곳에 두세요.** 크롬이 이 폴더에서 확장을 읽습니다.
-3. 크롬 주소창에 `chrome://extensions`를 입력합니다.
-4. 오른쪽 위 **개발자 모드**를 켭니다.
-5. **압축해제된 확장 프로그램을 로드합니다**를 누르고, 2번에서 푼 폴더(`manifest.json`이 들어 있는 폴더)를 고릅니다.
-6. 이미 열려 있던 유튜브 탭은 한 번 새로고침합니다.
+1. 위의 초록색 **다운로드** 버튼을 누릅니다. `youtube-gpt-summary.zip` 파일이 '다운로드' 폴더에 받아집니다.
+2. 받은 파일을 마우스 오른쪽 버튼으로 누르고 **모두 압축 풀기** → **압축 풀기**를 누릅니다. `youtube-gpt-summary` 폴더가 생깁니다.
+   - **이 폴더는 지우지 마세요.** 크롬이 계속 이 폴더에서 확장을 읽습니다. 옮기려면 지금(3번 전에) '문서' 폴더 같은 곳으로 옮겨 두세요.
+3. 크롬 주소창에 `chrome://extensions` 를 입력하고 Enter를 누릅니다.
+4. 화면 오른쪽 위의 **개발자 모드** 스위치를 켭니다.
+5. 왼쪽 위에 생긴 **압축해제된 확장 프로그램 로드** 버튼을 누르고, 2번에서 생긴 `youtube-gpt-summary` 폴더를 고른 뒤 **폴더 선택**을 누릅니다.
+   - 폴더 안에 `manifest.json` 파일이 보이는 폴더를 골라야 합니다.
+6. 목록에 **YouTube GPT Summary**가 나타나면 끝입니다. 이미 열려 있던 유튜브 탭은 새로고침(F5)하세요.
 
 ChatGPT 또는 Gemini에 미리 로그인돼 있어야 합니다.
 
@@ -48,7 +53,11 @@ ChatGPT 또는 Gemini에 미리 로그인돼 있어야 합니다.
 
 ## 업데이트
 
-새 ZIP을 받아 **같은 폴더에 덮어쓴 뒤** `chrome://extensions`에서 이 확장의 새로고침(↻) 버튼을 누르고, 열린 유튜브·ChatGPT·Gemini 탭을 새로고침합니다. 같은 폴더를 쓰면 설정이 그대로 남습니다.
+1. 맨 위 **다운로드** 버튼으로 새 ZIP을 받아 압축을 풉니다.
+2. 새로 나온 파일들을 처음 설치한 `youtube-gpt-summary` 폴더에 **덮어씁니다**(같은 이름 파일은 '바꾸기').
+3. `chrome://extensions` 에서 YouTube GPT Summary 칸의 새로고침(↻) 버튼을 누르고, 열려 있던 유튜브·ChatGPT·Gemini 탭을 새로고침합니다.
+
+같은 폴더를 쓰면 설정이 그대로 남습니다.
 
 ## 알아둘 점
 
@@ -69,6 +78,6 @@ ChatGPT 또는 Gemini에 미리 로그인돼 있어야 합니다.
 
 A Chrome extension that sends a YouTube video's transcript to ChatGPT or Gemini and gets a summary in one click. It adds **Summarize with GPT** / **Summarize with Gemini** buttons to the bottom-right of video pages; the prompt is filled in and sent in a temporary chat. Free, no ads, no developer server.
 
-Install: download the ZIP from [Releases](https://github.com/igayowai/youtube-gpt-summary/releases/latest), unzip it to a folder you keep, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and select that folder. Options are under the extension's **Details → Extension options**. [Privacy policy](https://igayowai.github.io/youtube-gpt-summary/privacy.html).
+Install: [download the ZIP](https://github.com/igayowai/youtube-gpt-summary/releases/latest/download/youtube-gpt-summary.zip), unzip it to a folder you keep, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and select that folder. Options are under the extension's **Details → Extension options**. [Privacy policy](https://igayowai.github.io/youtube-gpt-summary/privacy.html).
 
 License: [LICENSE](LICENSE)
