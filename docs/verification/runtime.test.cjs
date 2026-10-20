@@ -9,7 +9,8 @@ const { root, readSource, plain, createRuntime } = require("./helpers/runtime.cj
 const defaults = {
   customPrompt: null, promptMode: "default", outputLanguage: "Korean",
   chatgptModelFamily: "latest", chatgptReasoningEffort: "none", geminiModel: "none", geminiThinkingLevel: "none",
-  aggressiveTranscriptPrefetch: true, autoSubmit: true, useTemporaryChat: true
+  claudeModel: "none", claudeEffort: "none",
+  aggressiveTranscriptPrefetch: true, autoSubmit: true, useTemporaryChat: true, useClaudeIncognito: true
 };
 
 test("all runtime JavaScript passes node --check", () => {

@@ -56,7 +56,8 @@ test("Options loads in HTML order and renders exactly the configured choices", a
   for (const [id, choices] of [
     ["outputLanguage", y.OUTPUT_LANGUAGES],
     ["chatgptReasoningEffort", y.CHATGPT_REASONING_EFFORTS],
-    ["geminiModel", y.GEMINI_MODELS], ["geminiThinkingLevel", y.GEMINI_THINKING_LEVELS]
+    ["geminiModel", y.GEMINI_MODELS], ["geminiThinkingLevel", y.GEMINI_THINKING_LEVELS],
+    ["claudeModel", y.CLAUDE_MODELS], ["claudeEffort", y.CLAUDE_EFFORTS]
   ]) {
     assert.deepEqual(h.controls[id].children.map((option) => ({ value: option.value, label: option.textContent })),
       plain(choices.map(({ value, label }) => ({ value, label }))));
@@ -94,6 +95,9 @@ test("Options save normalizes the form, updates selection and clears status on i
   c.chatgptReasoningEffort.value = "extra-high";
   c.geminiModel.value = "argon";
   c.geminiThinkingLevel.value = "medium";
+  c.claudeModel.value = "sonnet";
+  c.claudeEffort.value = "max";
+  c.useClaudeIncognito.checked = false;
   c.aggressiveTranscriptPrefetch.checked = false;
   c.autoSubmit.checked = false;
   c.useTemporaryChat.checked = false;
@@ -105,7 +109,8 @@ test("Options save normalizes the form, updates selection and clears status on i
   assert.deepEqual(h.local.data, {
     customPrompt: "new instruction", promptMode: "custom", outputLanguage: "English",
     chatgptReasoningEffort: "extra-high", geminiModel: "argon", geminiThinkingLevel: "medium",
-    aggressiveTranscriptPrefetch: false, autoSubmit: false, useTemporaryChat: false
+    claudeModel: "sonnet", claudeEffort: "max",
+    aggressiveTranscriptPrefetch: false, autoSubmit: false, useTemporaryChat: false, useClaudeIncognito: false
   });
   assert.equal(c.customPrompt.value, "new instruction");
   assert.equal(c.status.textContent, "Saved.");
@@ -119,10 +124,10 @@ test("Options failed load uses defaults and still allows a later save", async ()
   const h = await loadOptions({ failRead: true });
   const defaults = h.context.YGS.DEFAULT_SETTINGS;
   assert.equal(h.controls.customPrompt.value, "");
-  for (const id of ["outputLanguage", "chatgptReasoningEffort", "geminiModel", "geminiThinkingLevel"]) {
+  for (const id of ["outputLanguage", "chatgptReasoningEffort", "geminiModel", "geminiThinkingLevel", "claudeModel", "claudeEffort"]) {
     assert.equal(h.controls[id].value, defaults[id]);
   }
-  for (const id of ["aggressiveTranscriptPrefetch", "autoSubmit", "useTemporaryChat"]) {
+  for (const id of ["aggressiveTranscriptPrefetch", "autoSubmit", "useTemporaryChat", "useClaudeIncognito"]) {
     assert.equal(h.controls[id].checked, defaults[id]);
   }
   assert.equal(h.radios.find((radio) => radio.checked).value, defaults.promptMode);

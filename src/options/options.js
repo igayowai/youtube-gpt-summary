@@ -7,6 +7,9 @@ globalThis.YGS = globalThis.YGS || {};
   const chatgptReasoningEffort = document.getElementById("chatgptReasoningEffort");
   const geminiModel = document.getElementById("geminiModel");
   const geminiThinkingLevel = document.getElementById("geminiThinkingLevel");
+  const claudeModel = document.getElementById("claudeModel");
+  const claudeEffort = document.getElementById("claudeEffort");
+  const useClaudeIncognito = document.getElementById("useClaudeIncognito");
   const aggressiveTranscriptPrefetch = document.getElementById("aggressiveTranscriptPrefetch");
   const useTemporaryChat = document.getElementById("useTemporaryChat");
   const autoSubmit = document.getElementById("autoSubmit");
@@ -21,6 +24,8 @@ globalThis.YGS = globalThis.YGS || {};
   renderSelectOptions(chatgptReasoningEffort, globalThis.YGS.CHATGPT_REASONING_EFFORTS);
   renderSelectOptions(geminiModel, globalThis.YGS.GEMINI_MODELS);
   renderSelectOptions(geminiThinkingLevel, globalThis.YGS.GEMINI_THINKING_LEVELS);
+  renderSelectOptions(claudeModel, globalThis.YGS.CLAUDE_MODELS);
+  renderSelectOptions(claudeEffort, globalThis.YGS.CLAUDE_EFFORTS);
   await loadSettings();
 
   saveButton.addEventListener("click", async () => {
@@ -34,8 +39,11 @@ globalThis.YGS = globalThis.YGS || {};
         chatgptReasoningEffort: chatgptReasoningEffort.value,
         geminiModel: geminiModel.value,
         geminiThinkingLevel: geminiThinkingLevel.value,
+        claudeModel: claudeModel.value,
+        claudeEffort: claudeEffort.value,
         aggressiveTranscriptPrefetch: aggressiveTranscriptPrefetch.checked,
         useTemporaryChat: useTemporaryChat.checked,
+        useClaudeIncognito: useClaudeIncognito.checked,
         autoSubmit: autoSubmit.checked
       });
 
@@ -67,6 +75,9 @@ globalThis.YGS = globalThis.YGS || {};
     chatgptReasoningEffort.value = settings.chatgptReasoningEffort;
     geminiModel.value = settings.geminiModel;
     geminiThinkingLevel.value = settings.geminiThinkingLevel;
+    claudeModel.value = settings.claudeModel;
+    claudeEffort.value = settings.claudeEffort;
+    useClaudeIncognito.checked = settings.useClaudeIncognito;
     aggressiveTranscriptPrefetch.checked = settings.aggressiveTranscriptPrefetch;
     useTemporaryChat.checked = settings.useTemporaryChat;
     autoSubmit.checked = settings.autoSubmit;

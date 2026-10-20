@@ -21,11 +21,16 @@ function normalizeSettings(data) {
     ...normalizeChatGptSelection(data),
     geminiModel: normalizeGeminiModel(data.geminiModel),
     geminiThinkingLevel: normalizeGeminiThinkingLevel(data.geminiThinkingLevel),
+    claudeModel: normalizeClaudeModel(data.claudeModel),
+    claudeEffort: normalizeClaudeEffort(data.claudeEffort),
     aggressiveTranscriptPrefetch: typeof data.aggressiveTranscriptPrefetch === "boolean"
       ? data.aggressiveTranscriptPrefetch
       : defaults.aggressiveTranscriptPrefetch,
     autoSubmit: typeof data.autoSubmit === "boolean" ? data.autoSubmit : defaults.autoSubmit,
-    useTemporaryChat: typeof data.useTemporaryChat === "boolean" ? data.useTemporaryChat : defaults.useTemporaryChat
+    useTemporaryChat: typeof data.useTemporaryChat === "boolean" ? data.useTemporaryChat : defaults.useTemporaryChat,
+    useClaudeIncognito: typeof data.useClaudeIncognito === "boolean"
+      ? data.useClaudeIncognito
+      : defaults.useClaudeIncognito
   };
 }
 
@@ -108,6 +113,20 @@ function normalizeGeminiThinkingLevel(value) {
     : globalThis.YGS.DEFAULT_SETTINGS.geminiThinkingLevel;
 }
 
+function normalizeClaudeModel(value) {
+  const model = String(value || "").trim().toLowerCase();
+  return globalThis.YGS.CLAUDE_MODELS.some((item) => item.value === model)
+    ? model
+    : globalThis.YGS.DEFAULT_SETTINGS.claudeModel;
+}
+
+function normalizeClaudeEffort(value) {
+  const effort = String(value || "").trim().toLowerCase();
+  return globalThis.YGS.CLAUDE_EFFORTS.some((item) => item.value === effort)
+    ? effort
+    : globalThis.YGS.DEFAULT_SETTINGS.claudeEffort;
+}
+
 function getOutputLanguageValues() {
   return globalThis.YGS.OUTPUT_LANGUAGES.map((language) => language.value);
 }
@@ -148,6 +167,13 @@ globalThis.YGS.getChatGptUrlForRequest = function getChatGptUrlForRequest(reques
 globalThis.YGS.getGeminiUrlForRequest = function getGeminiUrlForRequest(requestId) {
   const hash = `ygsRequestId=${encodeURIComponent(requestId)}`;
   return `${globalThis.YGS.GEMINI_URL}#${hash}`;
+};
+
+// claude.ai opens a new chat in incognito mode when the URL carries ?incognito (2026-10-20).
+globalThis.YGS.getClaudeUrlForRequest = function getClaudeUrlForRequest(requestId, incognito) {
+  const hash = `ygsRequestId=${encodeURIComponent(requestId)}`;
+  const base = incognito ? `${globalThis.YGS.CLAUDE_URL}?incognito` : globalThis.YGS.CLAUDE_URL;
+  return `${base}#${hash}`;
 };
 
 globalThis.YGS.getPendingPromptIndex = async function getPendingPromptIndex() {
@@ -222,6 +248,9 @@ globalThis.YGS.savePendingPrompt = async function savePendingPrompt(payload) {
     ...normalizeChatGptSelection(payload),
     geminiModel: normalizeGeminiModel(payload.geminiModel),
     geminiThinkingLevel: normalizeGeminiThinkingLevel(payload.geminiThinkingLevel),
+    claudeModel: normalizeClaudeModel(payload.claudeModel),
+    claudeEffort: normalizeClaudeEffort(payload.claudeEffort),
+    useClaudeIncognito: payload.useClaudeIncognito !== false,
     createdAt: Number(payload.createdAt || Date.now()),
     source: payload.source === "youtube" ? "youtube" : "youtube",
     mode: payload.mode === "emptyTranscriptStop" ? "emptyTranscriptStop" : "normal",

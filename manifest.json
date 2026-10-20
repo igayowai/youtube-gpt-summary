@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "YouTube GPT Summary",
-  "version": "0.1.110",
-  "description": "Use accessible YouTube transcripts or captions to prepare prompts for ChatGPT or Gemini.",
+  "version": "0.1.111",
+  "description": "Use accessible YouTube transcripts or captions to prepare prompts for ChatGPT, Gemini or Claude.",
   "minimum_chrome_version": "102",
   "permissions": [
     "storage",
@@ -12,7 +12,8 @@
     "https://www.youtube.com/*",
     "https://chatgpt.com/*",
     "https://chat.openai.com/*",
-    "https://gemini.google.com/*"
+    "https://gemini.google.com/*",
+    "https://claude.ai/*"
   ],
   "background": {
     "service_worker": "src/background/service_worker.js"
@@ -52,6 +53,17 @@
         "src/shared/constants.js",
         "src/shared/logger.js",
         "src/content/gemini.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://claude.ai/*"
+      ],
+      "js": [
+        "src/shared/constants.js",
+        "src/shared/logger.js",
+        "src/content/claude.js"
       ],
       "run_at": "document_idle"
     }

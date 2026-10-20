@@ -29,6 +29,9 @@ async function handleMessage(message, sender) {
     case globalThis.YGS.MESSAGE_TYPES.OPEN_GEMINI_WITH_PROMPT:
       return openGeminiWithPrompt(addSourceTabPlacement(message.payload, sender));
 
+    case globalThis.YGS.MESSAGE_TYPES.OPEN_CLAUDE_WITH_PROMPT:
+      return openClaudeWithPrompt(addSourceTabPlacement(message.payload, sender));
+
     case globalThis.YGS.MESSAGE_TYPES.ENQUEUE_CHATGPT_PROMPT:
       return enqueueChatGptPrompt(addSourceTabPlacement(message.payload, sender));
 
@@ -294,6 +297,56 @@ async function openGeminiWithPrompt(payload) {
       stored,
       requestId,
       error: String(error?.message || error || "Failed to open Gemini tab")
+    };
+  }
+}
+
+async function openClaudeWithPrompt(payload) {
+  if (!payload || typeof payload.prompt !== "string" || payload.prompt.length === 0) {
+    return {
+      ok: false,
+      error: "Missing prompt payload"
+    };
+  }
+
+  const requestId = String(payload.requestId || globalThis.YGS.createRequestId());
+  const normalizedPayload = {
+    ...payload,
+    requestId,
+    useTemporaryChat: false,
+    chatgptModelFamily: "latest",
+    chatgptReasoningEffort: "none",
+    claudeModel: payload.claudeModel || "none",
+    claudeEffort: payload.claudeEffort || "none",
+    useClaudeIncognito: payload.useClaudeIncognito !== false,
+    createdAt: Number(payload.createdAt || Date.now())
+  };
+
+  let stored = false;
+  try {
+    await globalThis.YGS.savePendingPrompt(normalizedPayload);
+    stored = true;
+  } catch (error) {
+    globalThis.YGS.warn("Failed to save pending prompt; Claude will still be opened for manual paste", error);
+  }
+
+  const url = globalThis.YGS.getClaudeUrlForRequest(requestId, normalizedPayload.useClaudeIncognito);
+
+  try {
+    const tab = await createAdjacentOrFallbackTab(url, normalizedPayload);
+    return {
+      ok: true,
+      stored,
+      requestId,
+      tabId: tab?.id || null
+    };
+  } catch (error) {
+    globalThis.YGS.warn("Failed to open Claude tab", error);
+    return {
+      ok: false,
+      stored,
+      requestId,
+      error: String(error?.message || error || "Failed to open Claude tab")
     };
   }
 }

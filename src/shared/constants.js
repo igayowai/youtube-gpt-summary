@@ -1,6 +1,6 @@
 globalThis.YGS = globalThis.YGS || {};
 
-globalThis.YGS.VERSION = "0.1.110";
+globalThis.YGS.VERSION = "0.1.111";
 
 globalThis.YGS.DEFAULT_SETTINGS = {
   customPrompt: null,
@@ -10,9 +10,12 @@ globalThis.YGS.DEFAULT_SETTINGS = {
   chatgptReasoningEffort: "none",
   geminiModel: "none",
   geminiThinkingLevel: "none",
+  claudeModel: "none",
+  claudeEffort: "none",
   aggressiveTranscriptPrefetch: true,
   autoSubmit: true,
-  useTemporaryChat: true
+  useTemporaryChat: true,
+  useClaudeIncognito: true
 };
 
 globalThis.YGS.DEFAULT_SUMMARY_PROMPT = `
@@ -311,6 +314,28 @@ globalThis.YGS.GEMINI_THINKING_LEVELS = [
   }
 ];
 
+// 2026-10-20 claude.ai model menu (menuitemradio rows): Fable 5.1 / Opus 5.5 / Sonnet 5.5 /
+// Haiku 5.5, each row followed by a short description. Older models sit under "더 많은 모델"
+// and are not offered. Matchers compare against the row's first line (the model name).
+globalThis.YGS.CLAUDE_MODELS = [
+  { value: "none", label: "선택 없음", matchers: [] },
+  { value: "fable", label: "Fable", matchers: ["prefix:fable"] },
+  { value: "opus", label: "Opus", matchers: ["prefix:opus"] },
+  { value: "sonnet", label: "Sonnet", matchers: ["prefix:sonnet"] },
+  { value: "haiku", label: "Haiku", matchers: ["prefix:haiku"] }
+];
+
+// 2026-10-20 claude.ai "노력" submenu: 낮음 / 중간(추천) / 높음 / 엑스트라 / 최대(4x 이상 사용량).
+// Matchers compare against the row's first word so the "추천" and usage badges are ignored.
+globalThis.YGS.CLAUDE_EFFORTS = [
+  { value: "none", label: "선택 없음", matchers: [] },
+  { value: "low", label: "낮음", matchers: ["exact:낮음", "exact:low"] },
+  { value: "medium", label: "중간", matchers: ["exact:중간", "exact:medium"] },
+  { value: "high", label: "높음", matchers: ["exact:높음", "exact:high"] },
+  { value: "extra", label: "엑스트라", matchers: ["exact:엑스트라", "exact:extra"] },
+  { value: "max", label: "최대 (사용량 4배 이상)", matchers: ["exact:최대", "exact:max"] }
+];
+
 globalThis.YGS.OUTPUT_LANGUAGES = [
   { value: "English", label: "English" },
   { value: "Chinese", label: "中文" },
@@ -356,10 +381,12 @@ globalThis.YGS.EMPTY_TRANSCRIPT_STOP_PROMPT = `
 globalThis.YGS.CHATGPT_TEMPORARY_CHAT_URL = "https://chatgpt.com/?temporary-chat=true";
 globalThis.YGS.CHATGPT_FALLBACK_URL = "https://chatgpt.com/";
 globalThis.YGS.GEMINI_URL = "https://gemini.google.com/app";
+globalThis.YGS.CLAUDE_URL = "https://claude.ai/new";
 
 globalThis.YGS.MESSAGE_TYPES = {
   OPEN_CHATGPT_WITH_PROMPT: "OPEN_CHATGPT_WITH_PROMPT",
   OPEN_GEMINI_WITH_PROMPT: "OPEN_GEMINI_WITH_PROMPT",
+  OPEN_CLAUDE_WITH_PROMPT: "OPEN_CLAUDE_WITH_PROMPT",
   ENQUEUE_CHATGPT_PROMPT: "ENQUEUE_CHATGPT_PROMPT",
   GET_PENDING_PROMPT: "GET_PENDING_PROMPT",
   CLEAR_PENDING_PROMPT: "CLEAR_PENDING_PROMPT",
@@ -386,5 +413,6 @@ globalThis.YGS.TRANSCRIPT_MEMORY_CACHE_MAX_ITEMS = 3;
 globalThis.YGS.UI = {
   youtubeButtonRootId: "ygs-gpt-summary-root",
   youtubeButtonId: "ygs-gpt-summary-button",
-  youtubeGeminiButtonId: "ygs-gemini-summary-button"
+  youtubeGeminiButtonId: "ygs-gemini-summary-button",
+  youtubeClaudeButtonId: "ygs-claude-summary-button"
 };

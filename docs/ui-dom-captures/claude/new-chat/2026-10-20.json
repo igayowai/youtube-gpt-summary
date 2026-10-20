@@ -1,0 +1,261 @@
+{
+  "service": "claude.ai",
+  "captured": "2026-10-20",
+  "ui": "Korean UI, logged-in account, https://claude.ai/new (normal) and https://claude.ai/new?incognito, empty composer, model menu and 노력 submenu opened, nothing sent",
+  "kind": "reduced sketch: real attributes copied from outerHTML, class/style/id/svg removed, only elements the extension uses; row text is innerText with whitespace collapsed, so line breaks between name and description are not recorded",
+  "newChat": [
+    {
+      "tag": "div",
+      "attrs": {
+        "contenteditable": "true",
+        "role": "textbox",
+        "data-cds": "Editor",
+        "aria-multiline": "true",
+        "data-testid": "chat-input",
+        "data-composer-editor": "marlin",
+        "aria-label": "Claude에게 프롬프트를 입력하세요.",
+        "data-doc-empty": "true"
+      },
+      "text": ""
+    },
+    {
+      "tag": "button",
+      "attrs": {
+        "type": "button",
+        "disabled": "",
+        "data-cds": "Button",
+        "aria-label": "메시지 보내기",
+        "data-testid": "chat-input-send"
+      },
+      "text": ""
+    },
+    {
+      "tag": "button",
+      "attrs": {
+        "type": "button",
+        "data-cds": "ModelSelector",
+        "aria-label": "모델: Opus 5.5 높음",
+        "data-testid": "model-selector-dropdown",
+        "aria-haspopup": "menu",
+        "aria-expanded": "false"
+      },
+      "text": "Opus 5.5 높음"
+    },
+    {
+      "tag": "button",
+      "attrs": {
+        "type": "button",
+        "data-cds": "Button",
+        "aria-label": "시크릿 모드 사용"
+      },
+      "text": ""
+    }
+  ],
+  "incognitoNewChat": [
+    {
+      "tag": "div",
+      "attrs": {
+        "data-testid": "incognito-frame"
+      },
+      "text": ""
+    },
+    {
+      "tag": "button",
+      "attrs": {
+        "type": "button",
+        "data-cds": "Button",
+        "aria-label": "시크릿 모드 종료"
+      },
+      "text": ""
+    }
+  ],
+  "modelMenu": {
+    "attrs": {
+      "role": "menu",
+      "data-open": "",
+      "data-cds": "",
+      "data-side": "",
+      "data-align": ""
+    },
+    "rows": [
+      {
+        "role": "menuitemradio",
+        "checked": "false",
+        "text": "Fable 5.1 가장 어려운 과제를 위해"
+      },
+      {
+        "role": "menuitemradio",
+        "checked": "true",
+        "text": "Opus 5.5 복잡한 작업과 일상 업무를 위해"
+      },
+      {
+        "role": "menuitemradio",
+        "checked": "false",
+        "text": "Sonnet 5.5 간단한 작업에 가장 효율적"
+      },
+      {
+        "role": "menuitemradio",
+        "checked": "false",
+        "text": "Haiku 5.5 가장 빠른 답변"
+      },
+      {
+        "role": "menuitem",
+        "popup": "menu",
+        "text": "노력 높음"
+      },
+      {
+        "role": "menuitem",
+        "popup": "menu",
+        "text": "더 많은 모델"
+      }
+    ]
+  },
+  "effortSubmenu": {
+    "attrs": {
+      "role": "menu",
+      "data-open": ""
+    },
+    "rows": [
+      {
+        "role": "menuitemradio",
+        "checked": "false",
+        "text": "낮음"
+      },
+      {
+        "role": "menuitemradio",
+        "checked": "false",
+        "text": "중간 추천"
+      },
+      {
+        "role": "menuitemradio",
+        "checked": "true",
+        "text": "높음"
+      },
+      {
+        "role": "menuitemradio",
+        "checked": "false",
+        "text": "엑스트라"
+      },
+      {
+        "role": "menuitemradio",
+        "checked": "false",
+        "text": "최대 4× 이상 사용량"
+      }
+    ]
+  },
+  "compactModelMenu": {
+    "note": "Same menu opened in a tab whose viewport is 0x0 (never shown): 노력 and 더 많은 모델 are inline role=group sections instead of submenus. Seen with Sonnet 5.5 selected.",
+    "attrs": {
+      "role": "menu",
+      "data-open": "",
+      "data-instant": ""
+    },
+    "groups": [
+      {
+        "label": "Fable 5.1",
+        "rows": [
+          {
+            "role": "menuitemradio",
+            "checked": "false",
+            "text": "Fable 5.1 가장 어려운 과제를 위해"
+          },
+          {
+            "role": "menuitemradio",
+            "checked": "false",
+            "text": "Opus 5.5 복잡한 작업과 일상 업무를 위해"
+          },
+          {
+            "role": "menuitemradio",
+            "checked": "true",
+            "text": "Sonnet 5.5 간단한 작업에 가장 효율적"
+          },
+          {
+            "role": "menuitemradio",
+            "checked": "false",
+            "text": "Haiku 5.5 가장 빠른 답변"
+          }
+        ]
+      },
+      {
+        "label": "노력",
+        "rows": [
+          {
+            "role": "menuitemradio",
+            "checked": "false",
+            "text": "낮음"
+          },
+          {
+            "role": "menuitemradio",
+            "checked": "true",
+            "text": "중간 추천"
+          },
+          {
+            "role": "menuitemradio",
+            "checked": "false",
+            "text": "높음"
+          },
+          {
+            "role": "menuitemradio",
+            "checked": "false",
+            "text": "엑스트라"
+          },
+          {
+            "role": "menuitemradio",
+            "checked": "false",
+            "text": "최대 5× 이상 사용량"
+          }
+        ]
+      },
+      {
+        "label": "더 많은 모델",
+        "rows": [
+          {
+            "role": "menuitemradio",
+            "checked": "false",
+            "text": "Fable 5"
+          },
+          {
+            "role": "menuitemradio",
+            "checked": "false",
+            "text": "Opus 5"
+          },
+          {
+            "role": "menuitemradio",
+            "checked": "false",
+            "text": "Opus 4.8"
+          },
+          {
+            "role": "menuitemradio",
+            "checked": "false",
+            "text": "Opus 4.7"
+          },
+          {
+            "role": "menuitemradio",
+            "checked": "false",
+            "text": "Opus 4.6"
+          },
+          {
+            "role": "menuitemradio",
+            "checked": "false",
+            "text": "Opus 3"
+          },
+          {
+            "role": "menuitemradio",
+            "checked": "false",
+            "text": "Sonnet 5"
+          },
+          {
+            "role": "menuitemradio",
+            "checked": "false",
+            "text": "Sonnet 4.6"
+          },
+          {
+            "role": "menuitemradio",
+            "checked": "false",
+            "text": "Haiku 4.5"
+          }
+        ]
+      }
+    ]
+  }
+}

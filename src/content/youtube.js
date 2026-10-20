@@ -4,6 +4,13 @@ globalThis.YGS = globalThis.YGS || {};
   const ROOT_ID = globalThis.YGS.UI.youtubeButtonRootId;
   const BUTTON_ID = globalThis.YGS.UI.youtubeButtonId;
   const GEMINI_BUTTON_ID = globalThis.YGS.UI.youtubeGeminiButtonId;
+  const CLAUDE_BUTTON_ID = globalThis.YGS.UI.youtubeClaudeButtonId;
+  // Button label = service name only; the full name goes to aria-label.
+  const BUTTON_LABELS = {
+    chatgpt: { text: "GPT", ariaLabel: "Summarize with ChatGPT" },
+    gemini: { text: "Gemini", ariaLabel: "Summarize with Gemini" },
+    claude: { text: "Claude", ariaLabel: "Summarize with Claude" }
+  };
 
   let lastUrl = location.href;
   let routeTimer = null;
@@ -87,46 +94,35 @@ globalThis.YGS = globalThis.YGS || {};
   appearance: none;
   border: 0;
   border-radius: 18px;
-  padding: 10px 16px;
-  font: 500 14px/1.2 Roboto, Arial, sans-serif;
-  background: #0f0f0f;
+  padding: 10px 18px;
+  font: 600 14px/1.2 Roboto, Arial, sans-serif;
   color: #ffffff;
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.24);
   white-space: nowrap;
-  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  opacity: 0.45;
+  transition: opacity 160ms ease, filter 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+#${ROOT_ID} .ygs-summary-button.ygs-transcript-ready {
+  opacity: 1;
 }
 #${ROOT_ID} .ygs-summary-button:hover {
   transform: translateY(-1px);
+  filter: brightness(1.12);
 }
-#${BUTTON_ID}:hover {
-  background: #272727;
+#${BUTTON_ID} {
+  background: #000000;
 }
 #${GEMINI_BUTTON_ID} {
-  background: #1a73e8;
-  color: #ffffff;
+  background: linear-gradient(90deg, #4285f4 0%, #9b72cb 100%);
 }
-#${GEMINI_BUTTON_ID}:hover {
-  background: #1558b0;
-}
-#${ROOT_ID} .ygs-summary-button.ygs-transcript-ready {
-  background: #b9f6ca;
-  color: #10391f;
-  box-shadow: inset 0 0 0 1px rgba(16, 57, 31, 0.16);
-}
-#${ROOT_ID} .ygs-summary-button.ygs-transcript-ready:hover {
-  background: #9df1b3;
+#${CLAUDE_BUTTON_ID} {
+  background: #d97757;
 }
 #${ROOT_ID} .ygs-summary-button:disabled {
   cursor: wait;
   opacity: 0.7;
   transform: none;
-}
-@media (prefers-color-scheme: light) {
-  #${BUTTON_ID} {
-    background: #0f0f0f;
-    color: #ffffff;
-  }
 }
 @media (max-width: 520px) {
   #${ROOT_ID} {
@@ -190,27 +186,16 @@ globalThis.YGS = globalThis.YGS || {};
     const root = document.createElement("div");
     root.id = ROOT_ID;
 
-    const button = createSummaryButton({
-      id: BUTTON_ID,
-      target: "chatgpt",
-      text: "Summarize with GPT",
-      ariaLabel: "Summarize with GPT"
-    });
-    const geminiButton = createSummaryButton({
-      id: GEMINI_BUTTON_ID,
-      target: "gemini",
-      text: "Summarize with Gemini",
-      ariaLabel: "Summarize with Gemini"
-    });
-
-    root.appendChild(button);
-    root.appendChild(geminiButton);
+    root.appendChild(createSummaryButton({ id: BUTTON_ID, target: "chatgpt" }));
+    root.appendChild(createSummaryButton({ id: GEMINI_BUTTON_ID, target: "gemini" }));
+    root.appendChild(createSummaryButton({ id: CLAUDE_BUTTON_ID, target: "claude" }));
 
     document.body.appendChild(root);
     updateTranscriptReadyButton(getVideoIdFromUrl(location.href));
   }
 
-  function createSummaryButton({ id, target, text, ariaLabel }) {
+  function createSummaryButton({ id, target }) {
+    const { text, ariaLabel } = BUTTON_LABELS[target];
     const button = document.createElement("button");
     button.id = id;
     button.type = "button";
@@ -228,8 +213,8 @@ globalThis.YGS = globalThis.YGS || {};
       return;
     }
 
-    const target = button instanceof HTMLElement && button.dataset.ygsTarget === "gemini"
-      ? "gemini"
+    const target = button instanceof HTMLElement && Object.hasOwn(BUTTON_LABELS, button.dataset.ygsTarget)
+      ? button.dataset.ygsTarget
       : "chatgpt";
     const originalText = button.textContent;
     button.disabled = true;
@@ -274,6 +259,19 @@ globalThis.YGS = globalThis.YGS || {};
           autoSubmit: settings.autoSubmit === true,
           geminiModel: settings.geminiModel,
           geminiThinkingLevel: settings.geminiThinkingLevel,
+          createdAt: Date.now(),
+          source: "youtube",
+          mode: built.mode,
+          video
+        });
+      } else if (target === "claude") {
+        button.textContent = "Opening Claude...";
+        await openClaudeWithPrompt({
+          prompt: built.prompt,
+          autoSubmit: settings.autoSubmit === true,
+          claudeModel: settings.claudeModel,
+          claudeEffort: settings.claudeEffort,
+          useClaudeIncognito: settings.useClaudeIncognito !== false,
           createdAt: Date.now(),
           source: "youtube",
           mode: built.mode,
@@ -373,6 +371,49 @@ globalThis.YGS = globalThis.YGS || {};
     } catch (error) {
       globalThis.YGS.warn("Failed to ask background to open Gemini prompt", error);
       openGeminiWindowFallback(requestId);
+    }
+  }
+
+  async function openClaudeWithPrompt(partialPayload) {
+    const requestId = globalThis.YGS.createRequestId();
+    const payload = {
+      requestId,
+      ...partialPayload
+    };
+
+    globalThis.YGS.log("Using Claude settings", {
+      claudeModel: payload.claudeModel,
+      claudeEffort: payload.claudeEffort,
+      incognito: payload.useClaudeIncognito
+    });
+
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: globalThis.YGS.MESSAGE_TYPES.OPEN_CLAUDE_WITH_PROMPT,
+        payload
+      });
+
+      if (!response || response.ok !== true) {
+        globalThis.YGS.warn("Background did not confirm Claude open", response);
+        openClaudeWindowFallback(requestId, payload.useClaudeIncognito);
+      } else {
+        globalThis.YGS.log("Claude prompt opened", {
+          requestId,
+          tabId: response.tabId || null
+        });
+      }
+    } catch (error) {
+      globalThis.YGS.warn("Failed to ask background to open Claude prompt", error);
+      openClaudeWindowFallback(requestId, payload.useClaudeIncognito);
+    }
+  }
+
+  function openClaudeWindowFallback(requestId, incognito) {
+    try {
+      const url = globalThis.YGS.getClaudeUrlForRequest(requestId, incognito !== false);
+      globalThis.open(url, "_blank", "noopener");
+    } catch (error) {
+      globalThis.YGS.warn("Claude window.open fallback failed", error);
     }
   }
 
@@ -681,9 +722,7 @@ globalThis.YGS = globalThis.YGS || {};
 
     for (const button of buttons) {
       button.classList.toggle("ygs-transcript-ready", ready);
-      const baseLabel = button.dataset.ygsTarget === "gemini"
-        ? "Summarize with Gemini"
-        : "Summarize with GPT";
+      const baseLabel = (BUTTON_LABELS[button.dataset.ygsTarget] || BUTTON_LABELS.chatgpt).ariaLabel;
       if (ready) {
         button.title = "Transcript ready";
         button.setAttribute("aria-label", `${baseLabel}. Transcript ready.`);
@@ -695,7 +734,7 @@ globalThis.YGS = globalThis.YGS || {};
   }
 
   function getSummaryButtons() {
-    return [BUTTON_ID, GEMINI_BUTTON_ID]
+    return [BUTTON_ID, GEMINI_BUTTON_ID, CLAUDE_BUTTON_ID]
       .map((id) => document.getElementById(id))
       .filter((button) => button instanceof HTMLButtonElement);
   }
