@@ -1,6 +1,6 @@
-# YouTube GPT Summary
+# AI Summary for YouTube
 
-유튜브 영상의 자막(스크립트)을 ChatGPT, Gemini, Claude에 넘겨서 버튼 한 번으로 요약을 받는 크롬 확장 프로그램입니다.
+유튜브 영상의 자막(스크립트)을 ChatGPT, Gemini, Claude에 넘겨서 버튼 한 번으로 요약을 받는 크롬 확장 프로그램입니다. (예전 이름: YouTube GPT Summary)
 
 <p align="center"><a href="https://github.com/igayowai/youtube-gpt-summary/releases/latest/download/youtube-gpt-summary.zip"><img src="docs/images/download.png" alt="다운로드 (크롬 확장 ZIP)" width="300"></a><br>
 누르면 최신 버전 ZIP 파일이 바로 받아집니다. 받은 뒤 아래 <b>설치</b>를 따라 하세요.</p>
@@ -29,7 +29,7 @@
 
 **6.** 목록에 아래 카드가 보이면 끝입니다. 이미 열려 있던 유튜브 탭은 새로고침(F5)하세요.
 
-<img src="docs/images/chrome-installed.png" alt="설치된 YouTube GPT Summary 카드" width="330">
+<img src="docs/images/chrome-installed.png" alt="설치된 AI Summary for YouTube 카드" width="330">
 
 쓰려는 서비스(ChatGPT, Gemini, Claude)에 미리 로그인돼 있어야 합니다.
 
@@ -50,7 +50,7 @@
 
 <img src="docs/images/open-options.png" alt="확장 아이콘을 오른쪽 클릭해 옵션을 누르는 모습" width="260">
 
-> 아이콘이 안 보이면 주소창 오른쪽의 퍼즐 모양 버튼을 누르고, YouTube GPT Summary 옆의 압정 모양을 눌러 고정하세요.
+> 아이콘이 안 보이면 주소창 오른쪽의 퍼즐 모양 버튼을 누르고, AI Summary for YouTube 옆의 압정 모양을 눌러 고정하세요.
 
 <img src="docs/images/options.png" alt="설정 화면과 항목 번호" width="600">
 
@@ -68,7 +68,7 @@
 
 1. 맨 위 **다운로드** 버튼으로 새 ZIP을 받아 압축을 풉니다.
 2. 새로 나온 파일들을 처음 설치한 `youtube-gpt-summary` 폴더에 **덮어씁니다**(같은 이름 파일은 '바꾸기').
-3. `chrome://extensions` 에서 YouTube GPT Summary 칸의 새로고침(↻) 버튼을 누르고, 열려 있던 유튜브·ChatGPT·Gemini·Claude 탭을 새로고침합니다.
+3. `chrome://extensions` 에서 AI Summary for YouTube 칸의 새로고침(↻) 버튼을 누르고, 열려 있던 유튜브·ChatGPT·Gemini·Claude 탭을 새로고침합니다.
 
 같은 폴더를 쓰면 설정이 그대로 남습니다.
 

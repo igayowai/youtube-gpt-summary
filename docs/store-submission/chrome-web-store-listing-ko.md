@@ -2,14 +2,14 @@
 
 ## Distribution
 
-- Visibility: Unlisted
+- Visibility: Public (2026-10-21 사용자 결정. 이전 v0.1.81은 Unlisted로 게시됨)
 - Category: Productivity
 - Language: Korean
 - Region: All regions
 
 ## Store Name
 
-YouTube GPT Summary
+AI Summary for YouTube
 
 ## Short Description
 
@@ -17,14 +17,14 @@ YouTube GPT Summary
 
 ## Detailed Description
 
-YouTube GPT Summary는 YouTube 영상 페이지에서 접근 가능한 자막 또는 스크립트가 제공되는 경우 이를 추출하고, 사용자가 선택한 프롬프트와 함께 ChatGPT, Gemini 또는 Claude로 보내 요약과 분석 작업을 돕는 Chrome 확장 프로그램입니다.
+AI Summary for YouTube는 YouTube 영상 페이지에서 접근 가능한 자막 또는 스크립트가 제공되는 경우 이를 추출하고, 사용자가 선택한 프롬프트와 함께 ChatGPT, Gemini 또는 Claude로 보내 요약과 분석 작업을 돕는 Chrome 확장 프로그램입니다.
 
 주요 기능:
 
 - YouTube 영상 페이지에 `GPT`, `Gemini`, `Claude` 버튼을 표시합니다.
 - 접근 가능한 영상 transcript/caption을 추출해 제목, URL, transcript, 프롬프트를 하나의 요청으로 구성합니다.
-- ChatGPT 경로에서는 가능한 경우 Temporary Chat으로 열고, 사용자가 설정한 모델 선택을 시도합니다.
-- Gemini 경로에서는 가능한 경우 Gemini Temporary Chat으로 열고, 사용자가 설정한 모델 선택을 시도합니다.
+- ChatGPT 경로에서는 가능한 경우 임시 채팅으로 열고, 사용자가 설정한 추론 강도 선택을 시도합니다(모델은 바꾸지 않음).
+- Gemini 경로에서는 Gemini 임시 채팅으로 열고, 사용자가 설정한 모델과 사고 수준 선택을 시도합니다.
 - Claude 경로에서는 기본으로 claude.ai 시크릿 모드로 열고, 사용자가 설정한 모델과 노력 수준 선택을 시도합니다.
 - `autoSubmit` 설정이 켜져 있으면 프롬프트 입력 후 자동 제출을 시도합니다.
 - transcript/caption을 가져온 경우 자동 입력이 실패할 때를 대비해 생성된 프롬프트를 클립보드에 복사할 수 있습니다.
@@ -67,7 +67,7 @@ The extension's use of user data is limited to providing or improving its single
 
 ### `storage`
 
-Stores extension settings such as prompt mode, custom prompt, language, model selections, auto-submit, Temporary Chat, prefetch settings, and temporary prompt-transfer state.
+Stores extension settings such as prompt mode, custom prompt, language, ChatGPT reasoning effort, Gemini model and thinking level, Claude model and effort, Temporary Chat, Claude incognito, auto-submit and prefetch settings, and temporary prompt-transfer state.
 
 ### `clipboardWrite`
 
@@ -79,11 +79,11 @@ Adds summarize buttons to YouTube watch pages and extracts accessible transcript
 
 ### `https://chatgpt.com/*` and `https://chat.openai.com/*`
 
-Opens ChatGPT, attempts Temporary Chat when enabled, inserts the generated prompt, selects the configured ChatGPT model when possible, and optionally submits the prompt.
+Opens ChatGPT, attempts Temporary Chat when enabled, inserts the generated prompt, selects the configured reasoning effort when set (the model is not changed), and optionally submits the prompt.
 
 ### `https://gemini.google.com/*`
 
-Opens Gemini, attempts Gemini Temporary Chat, inserts the generated prompt, selects the configured Gemini model when possible, and optionally submits the prompt after Temporary Chat is confirmed.
+Opens Gemini, attempts Gemini Temporary Chat, inserts the generated prompt, selects the configured Gemini model and thinking level when set, and optionally submits the prompt after Temporary Chat is confirmed.
 
 ### `https://claude.ai/*`
 

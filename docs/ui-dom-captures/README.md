@@ -6,7 +6,7 @@ Claude: [2026-10-20 claude.ai new chat, model menu and incognito](claude/new-cha
 
 Latest local evidence: [2026-10-19 ChatGPT, Gemini and YouTube observations](live-ui-2026-10-19.md) (reduced sketches; v0.1.103 mismatches listed). Previous: [2026-09-25 ChatGPT picker](chatgpt/new-chat/model-picker-2026-09-25.md).
 
-This folder indexes UI DOM capture assets consumed by YouTube GPT Summary.
+This folder indexes UI DOM capture assets consumed by AI Summary for YouTube.
 
 ChatGPT captures are maintained in this project's docs/ui-dom-captures/chatgpt/:
 

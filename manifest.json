@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "YouTube GPT Summary",
-  "version": "0.1.113",
+  "name": "AI Summary for YouTube",
+  "version": "0.1.114",
   "description": "Use accessible YouTube transcripts or captions to prepare prompts for ChatGPT, Gemini or Claude.",
   "minimum_chrome_version": "102",
   "permissions": [
@@ -70,7 +70,7 @@
   ],
   "options_page": "src/options/options.html",
   "action": {
-    "default_title": "YouTube GPT Summary"
+    "default_title": "AI Summary for YouTube"
   },
   "icons": {
     "16": "assets/icon16.png",

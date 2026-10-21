@@ -1,14 +1,14 @@
-# YouTube GPT Summary Privacy Policy and Disclaimer
+# AI Summary for YouTube Privacy Policy and Disclaimer
 
-Last updated: 2026-10-20 KST
+Last updated: 2026-10-21 KST
 
-This document describes how the YouTube GPT Summary Chrome extension handles data, what third-party services may receive user-directed content, and what limitations apply to summaries generated through ChatGPT, Gemini or Claude.
+This document describes how the AI Summary for YouTube Chrome extension handles data, what third-party services may receive user-directed content, and what limitations apply to summaries generated through ChatGPT, Gemini or Claude.
 
 ## 1. Service Overview
 
-YouTube GPT Summary is a browser extension that helps users extract accessible YouTube transcript or caption text when available and send it to ChatGPT, Gemini or Claude with a selected prompt for summarization or audit-style analysis.
+AI Summary for YouTube is a browser extension that helps users extract accessible YouTube transcript or caption text when available and send it to ChatGPT, Gemini or Claude with a selected prompt for summarization or audit-style analysis.
 
-YouTube GPT Summary is an independent tool. It is not affiliated with, sponsored by, endorsed by, or officially approved by YouTube, Google, OpenAI, ChatGPT, Gemini, Anthropic, or Claude. YouTube, Google, OpenAI, ChatGPT, Gemini, Anthropic, Claude, and related names or trademarks are the property of their respective owners.
+AI Summary for YouTube is an independent tool. It is not affiliated with, sponsored by, endorsed by, or officially approved by YouTube, Google, OpenAI, ChatGPT, Gemini, Anthropic, or Claude. YouTube, Google, OpenAI, ChatGPT, Gemini, Anthropic, Claude, and related names or trademarks are the property of their respective owners.
 
 ## 2. Data Processed by the Extension
 
@@ -136,7 +136,7 @@ Used to insert the generated prompt into Claude (incognito mode by default), sel
 
 ## 9. Disclaimer
 
-YouTube GPT Summary is not affiliated with, sponsored by, endorsed by, or officially approved by YouTube, Google, OpenAI, ChatGPT, Gemini, Anthropic, or Claude.
+AI Summary for YouTube is not affiliated with, sponsored by, endorsed by, or officially approved by YouTube, Google, OpenAI, ChatGPT, Gemini, Anthropic, or Claude.
 
 This extension helps users send accessible YouTube transcript/caption text to ChatGPT, Gemini or Claude for summarization or audit-style analysis when such text is available. It does not guarantee that every YouTube video has an accessible transcript or caption. AI-generated summaries may be inaccurate, incomplete, outdated, or misleading. Users should verify important information directly from the original video, official materials, or other reliable sources.
 

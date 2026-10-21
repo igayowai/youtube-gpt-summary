@@ -1,8 +1,10 @@
-# 개발 기록 (YouTube GPT Summary v0.1.113)
+# 개발 기록 (AI Summary for YouTube v0.1.114)
 
 사용자용 안내는 [README](../README.md). 이 문서는 버전별 변경, 내부 동작, 디버깅 기록이다.
 
 GitHub: <https://github.com/igayowai/youtube-gpt-summary>. GitHub Pages serves the repository root of `main`, so the root `privacy.html` is the Chrome Web Store privacy policy URL (<https://igayowai.github.io/youtube-gpt-summary/privacy.html>). Keep it identical to `docs/privacy.html` and do not move or delete it. `.nojekyll` keeps Pages from running Jekyll over the docs.
+
+v0.1.114 (2026-10-21): renamed to "AI Summary for YouTube" (was "YouTube GPT Summary") and replaced the icon (white play triangle + "AI" + sparkle on a violet-to-blue square; source `docs/store-submission/icon.svg`) ahead of a public Chrome Web Store release. Reason: third-party extensions are expected to use the "X for YouTube" form, and the old blue square with a white play triangle resembled the YouTube play button; a CWS item was removed in 2023 over YouTube branding. No code changes. The repository, Pages URLs and release ZIP names stay `youtube-gpt-summary`. Store item `biacophadljoljbbnllfgebdehdghehf` (v0.1.81, unlisted since 2026-05) is updated in place, not deleted; dashboard inputs are in `docs/store-submission/chrome-web-store-dashboard-v0.1.114-ko.md`.
 
 v0.1.113 (2026-10-20): install defaults are now GPT reasoning effort Extra High, Gemini thinking level 높음 (model still 선택 없음) and Claude Opus / 높음. Saved settings are not changed; the new defaults apply to fresh installs and to fields never saved. Gemini renamed the 사고 수준 rows from 최저가 / 보통 / 최고가 to 낮음 / 보통 / 높음; matchers take the new words first and keep the old ones as fallbacks. A Gemini tab that is never shown first renders a "Gemini / Argon" pill without the level; v0.1.112 read "Gemini" as the model and withheld auto-submit. The model is now read from the second part and the level is chosen in the menu and confirmed on the re-rendered "Argon 높음" pill. The 사고 수준 row toggles open/closed on every click, and the old row click sent a synthetic click plus a native click, so it opened and closed again (live 2026-10-21: "thinking level option not found"); the row is now clicked once and checked, at most twice. Live check 2026-10-21 (never-shown tab, saved settings Argon / 높음): "Gemini thinking level selected 높음" → "Gemini prompt submitted", pill "Argon 높음", answer started. [Capture](ui-dom-captures/gemini/thinking-level-2026-10-20.md).
 
@@ -220,7 +222,7 @@ v0.1.6 adds an advanced settings area. Temporary Chat remains enabled by default
 
 v0.1.5 is a narrow YouTube transcript DOM fallback repair based on v0.1.4 live retest logs. It keeps the same MVP scope and permissions, preserves the working ChatGPT Temporary Chat injection/auto-submit flow, and improves parsing when YouTube's native transcript panel opens after fast prefetch fails.
 
-YouTube GPT Summary는 사용자의 브라우저에서 접근 가능한 YouTube transcript/caption을 추출해 ChatGPT 또는 Gemini 웹 UI에 prompt를 전달하는 Chrome Extension Manifest V3 도구입니다.
+AI Summary for YouTube는 사용자의 브라우저에서 접근 가능한 YouTube transcript/caption을 추출해 ChatGPT 또는 Gemini 웹 UI에 prompt를 전달하는 Chrome Extension Manifest V3 도구입니다.
 
 이 프로젝트는 Claude, 직접 GPT/Gemini API, API key, 자체 서버를 사용하지 않습니다. YouTube가 접근 가능한 transcript/caption을 제공하는 경우에만 사용자의 브라우저에서 가져와 prompt를 만들고, 선택한 웹앱 입력창에 넣는 방식입니다.
 
